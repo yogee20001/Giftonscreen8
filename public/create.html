@@ -37,7 +37,20 @@
                         placeholder="Write your heartfelt message here..."></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create Gift</button>
+                <div class="form-group">
+                    <label for="photos">Upload Photos (Optional)</label>
+                    <input type="file" id="photos" name="photos" accept="image/*" multiple
+                        style="padding: 0.5rem; border: 2px dashed #ccc; border-radius: 8px; cursor: pointer;">
+                    <small style="color: #666; display: block; margin-top: 0.5rem;">You can upload up to 5
+                        photos</small>
+                    <div id="photoPreview" style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;"></div>
+                    <div id="uploadProgress" style="display: none; margin-top: 0.5rem;">
+                        <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+                        <span id="progressText">Uploading...</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Gift</button>
             </form>
 
             <div id="message" class="message hidden"></div>
