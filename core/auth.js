@@ -46,6 +46,20 @@ export async function logout() {
 }
 
 /**
+ * Sign in with Google OAuth
+ * @returns {Promise<{error: Error|null}>}
+ */
+export async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + '/public/index.html'
+        }
+    });
+    return { error };
+}
+
+/**
  * Check if user is authenticated, redirect to login if not
  * @param {string} redirectUrl - URL to redirect unauthenticated users
  * @returns {Promise<Object|null>} - User object if authenticated
