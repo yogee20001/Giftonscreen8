@@ -3,8 +3,9 @@
 
 import { supabase } from './supabase.js';
 
-// Base URL for redirects - using custom domain
-const BASE_URL = 'https://giftonscreen.shop';
+// Base URL for redirects - using Cloudflare Pages URL
+// TODO: Change to 'https://giftonscreen.shop' once domain is configured
+const BASE_URL = 'https://750de005.giftonscreen8.pages.dev';
 
 /**
  * Send magic link to user's email for authentication
