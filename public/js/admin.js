@@ -1,17 +1,34 @@
 // Admin Panel Logic
 // Manages activation requests and gift activation
 
-import { requireAuth, logout } from '../../core/auth.js';
+import { requireAuth, logout, getUser } from '../../core/auth.js';
 import {
     getActivationRequests,
     updateGiftStatus,
-    markRequestProcessed,
-    getUserProfile
+    markRequestProcessed
 } from '../../core/api.js';
 import { formatDate } from '../../core/utils.js';
 
 // Admin email (hardcoded for now)
 const ADMIN_EMAIL = 'admin@giftonscreen.com'; // Change this to your admin email
+
+// DOM Elements - initialize first
+const container = document.getElementById('admin-container');
+const refreshBtn = document.getElementById('refreshBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// Render access denied message
+function renderAccessDenied() {
+    if (container) {
+        container.innerHTML = `
+            <div class="access-denied card">
+                <h2>⛔ Access Denied</h2>
+                <p>You do not have permission to access the admin panel.</p>
+                <a href="./index.html" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">Go Home</a>
+            </div>
+        `;
+    }
+}
 
 // Auth guard
 const user = await requireAuth('/public/login.html');
@@ -20,24 +37,15 @@ if (!user) {
 }
 
 // Check admin access
-const { user: currentUser } = await getUserProfile();
+const { user: currentUser, error: userError } = await getUser();
+if (userError || !currentUser) {
+    renderAccessDenied();
+    throw new Error('Unable to get user profile');
+}
+
 if (currentUser.email !== ADMIN_EMAIL) {
     renderAccessDenied();
     throw new Error('Access denied');
-}
-
-const container = document.getElementById('admin-container');
-const refreshBtn = document.getElementById('refreshBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-
-function renderAccessDenied() {
-    container.innerHTML = `
-        <div class="access-denied card">
-            <h2>⛔ Access Denied</h2>
-            <p>You do not have permission to access the admin panel.</p>
-            <a href="index.html" class="btn btn-primary mt-3">Go Home</a>
-        </div>
-    `;
 }
 
 function renderStats(requests) {
@@ -46,18 +54,18 @@ function renderStats(requests) {
     const total = requests.length;
 
     return `
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>${total}</h3>
-                <p>Total Requests</p>
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div class="stat-card" style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                <h3 style="font-size: 2rem; color: #6366f1;">${total}</h3>
+                <p style="color: #666;">Total Requests</p>
             </div>
-            <div class="stat-card">
-                <h3 style="color: #f59e0b;">${pending}</h3>
-                <p>Pending</p>
+            <div class="stat-card" style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                <h3 style="font-size: 2rem; color: #f59e0b;">${pending}</h3>
+                <p style="color: #666;">Pending</p>
             </div>
-            <div class="stat-card">
-                <h3 style="color: #10b981;">${processed}</h3>
-                <p>Processed</p>
+            <div class="stat-card" style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                <h3 style="font-size: 2rem; color: #10b981;">${processed}</h3>
+                <p style="color: #666;">Processed</p>
             </div>
         </div>
     `;
@@ -66,33 +74,34 @@ function renderStats(requests) {
 function renderRequests(requests) {
     if (!requests || requests.length === 0) {
         return `
-            <div class="empty-state card">
+            <div class="empty-state card" style="text-align: center; padding: 3rem;">
                 <p style="font-size: 3rem; margin-bottom: 1rem;">📭</p>
                 <h3>No Activation Requests</h3>
-                <p>When users request activation, they will appear here.</p>
+                <p style="color: #666;">When users request activation, they will appear here.</p>
             </div>
         `;
     }
 
     const requestsHtml = requests.map(request => `
-        <div class="request-item ${request.status}" data-id="${request.id}">
-            <div class="request-header">
+        <div class="request-item ${request.status}" data-id="${request.id}" style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+            <div class="request-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <div class="request-info">
                     <h4>Gift ID: ${request.gift_id}</h4>
-                    <p>Requested: ${formatDate(request.created_at)}</p>
-                    <p>User: ${request.user_id}</p>
+                    <p style="color: #666; font-size: 0.9rem;">Requested: ${formatDate(request.created_at)}</p>
+                    <p style="color: #666; font-size: 0.9rem;">User: ${request.user_id}</p>
                 </div>
-                <span class="status-badge ${request.status}">${request.status}</span>
+                <span class="status-badge ${request.status}" style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: ${request.status === 'pending' ? '#fef3c7' : '#d1fae5'}; color: ${request.status === 'pending' ? '#92400e' : '#065f46'};">${request.status}</span>
             </div>
 
-            <div class="request-message">${request.message || 'No message'}</div>
+            <div class="request-message" style="background: #fff; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">${request.message || 'No message'}</div>
 
-            <div class="request-actions">
+            <div class="request-actions" style="display: flex; gap: 0.5rem;">
                 <button
                     class="btn btn-success activate-btn"
                     data-gift-id="${request.gift_id}"
                     data-request-id="${request.id}"
                     ${request.status === 'processed' ? 'disabled' : ''}
+                    style="background: #10b981; color: #fff; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;"
                 >
                     ${request.status === 'processed' ? '✓ Activated' : '✓ Activate Gift'}
                 </button>
@@ -100,6 +109,7 @@ function renderRequests(requests) {
                     class="btn btn-secondary mark-processed-btn"
                     data-request-id="${request.id}"
                     ${request.status === 'processed' ? 'disabled' : ''}
+                    style="background: #6b7280; color: #fff; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;"
                 >
                     Mark Processed
                 </button>
@@ -108,7 +118,7 @@ function renderRequests(requests) {
     `).join('');
 
     return `
-        <div class="card">
+        <div class="card" style="background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <h2 style="margin-bottom: 1.5rem;">Activation Requests</h2>
             <div class="request-list">
                 ${requestsHtml}
@@ -118,12 +128,14 @@ function renderRequests(requests) {
 }
 
 async function loadDashboard() {
-    container.innerHTML = '<p style="text-align: center; color: #6b7280;">Loading...</p>';
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">Loading...</p>';
 
     const { requests, error } = await getActivationRequests();
 
     if (error) {
-        container.innerHTML = `<p style="color: #ef4444; text-align: center;">Error loading requests: ${error.message}</p>`;
+        container.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 2rem;">Error loading requests: ${error.message}</p>`;
         return;
     }
 
@@ -180,14 +192,18 @@ async function loadDashboard() {
 }
 
 // Event listeners
-refreshBtn.addEventListener('click', loadDashboard);
+if (refreshBtn) {
+    refreshBtn.addEventListener('click', loadDashboard);
+}
 
-logoutBtn.addEventListener('click', async () => {
-    const { error } = await logout();
-    if (!error) {
-        window.location.href = '/public/login.html';
-    }
-});
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        const { error } = await logout();
+        if (!error) {
+            window.location.href = '/public/login.html';
+        }
+    });
+}
 
 // Initial load
 await loadDashboard();
