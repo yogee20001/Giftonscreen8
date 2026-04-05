@@ -2,9 +2,7 @@
 // Handles email/password authentication for admins
 
 import { supabase } from '../../core/supabase.js';
-
-// Admin email (must match the one in admin.js)
-const ADMIN_EMAIL = 'admin@giftonscreen.com';
+import { checkIsAdminEmail } from '../../core/api.js';
 
 const adminLoginForm = document.getElementById('adminLoginForm');
 const messageDiv = document.getElementById('message');
@@ -24,10 +22,15 @@ function hideMessage() {
 async function checkExistingSession() {
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (session && session.user.email === ADMIN_EMAIL) {
-        // Already logged in as admin, redirect to admin panel
-        window.location.replace('/public/admin.html');
-        return true;
+    if (session) {
+        // Check if user is an admin in Supabase
+        const { isAdmin, error } = await checkIsAdminEmail(session.user.email);
+
+        if (isAdmin && !error) {
+            // Already logged in as admin, redirect to admin panel
+            window.location.replace('/public/admin.html');
+            return true;
+        }
     }
 
     return false;
@@ -41,17 +44,27 @@ adminLoginForm.addEventListener('submit', async (e) => {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    // Validate admin email
-    if (email !== ADMIN_EMAIL) {
-        showMessage('Invalid admin credentials', 'error');
-        return;
-    }
-
     // Disable button during login
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Signing in...';
+    loginBtn.textContent = 'Verifying...';
 
     try {
+        // First check if email is in admins table
+        const { isAdmin, error: adminCheckError } = await checkIsAdminEmail(email);
+
+        if (adminCheckError) {
+            console.error('Admin check error:', adminCheckError);
+        }
+
+        if (!isAdmin) {
+            showMessage('Access denied. This email is not authorized as an admin.', 'error');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+            return;
+        }
+
+        loginBtn.textContent = 'Signing in...';
+
         // Sign in with email and password
         const { data, error } = await supabase.auth.signInWithPassword({
             email,

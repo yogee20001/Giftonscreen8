@@ -5,12 +5,10 @@ import { requireAuth, logout, getUser } from '../../core/auth.js';
 import {
     getActivationRequests,
     updateGiftStatus,
-    markRequestProcessed
+    markRequestProcessed,
+    checkIsAdmin
 } from '../../core/api.js';
 import { formatDate } from '../../core/utils.js';
-
-// Admin email (hardcoded for now)
-const ADMIN_EMAIL = 'admin@giftonscreen.com'; // Change this to your admin email
 
 // DOM Elements - initialize first
 const container = document.getElementById('admin-container');
@@ -36,16 +34,18 @@ if (!user) {
     throw new Error('Authentication required');
 }
 
-// Check admin access
+// Check admin access via Supabase
 const { user: currentUser, error: userError } = await getUser();
 if (userError || !currentUser) {
     renderAccessDenied();
     throw new Error('Unable to get user profile');
 }
 
-if (currentUser.email !== ADMIN_EMAIL) {
+// Verify user is in admins table
+const { isAdmin, error: adminError } = await checkIsAdmin(currentUser.id);
+if (adminError || !isAdmin) {
     renderAccessDenied();
-    throw new Error('Access denied');
+    throw new Error('Access denied - not an admin');
 }
 
 function renderStats(requests) {

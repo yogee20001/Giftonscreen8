@@ -168,3 +168,52 @@ export async function markRequestProcessed(requestId) {
 
     return { error };
 }
+
+// ============================================
+// ADMIN CHECK FUNCTIONS
+// ============================================
+
+/**
+ * Check if a user is an admin
+ * @param {string} userId - User UUID
+ * @returns {Promise<{isAdmin: boolean, error: Error|null}>}
+ */
+export async function checkIsAdmin(userId) {
+    const { data, error } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+    return { isAdmin: !!data, error };
+}
+
+/**
+ * Check if an email belongs to an admin
+ * @param {string} email - Email address
+ * @returns {Promise<{isAdmin: boolean, error: Error|null}>}
+ */
+export async function checkIsAdminEmail(email) {
+    const { data, error } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+    return { isAdmin: !!data, error };
+}
+
+/**
+ * Get admin details for a user
+ * @param {string} userId - User UUID
+ * @returns {Promise<{admin: Object|null, error: Error|null}>}
+ */
+export async function getAdminDetails(userId) {
+    const { data: admin, error } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+    return { admin, error };
+}
