@@ -3,6 +3,9 @@
 
 import { supabase } from './supabase.js';
 
+// Base URL for redirects
+const BASE_URL = window.location.origin;
+
 /**
  * Send magic link to user's email for authentication
  * @param {string} email - User's email address
@@ -12,7 +15,7 @@ export async function login(email) {
     const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-            emailRedirectTo: window.location.origin + '/public/index.html'
+            emailRedirectTo: `${BASE_URL}/public/callback.html`
         }
     });
     return { error };
@@ -53,32 +56,10 @@ export async function signInWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: window.location.origin + '/public/index.html'
+            redirectTo: `${BASE_URL}/public/callback.html`
         }
     });
     return { error };
-}
-
-/**
- * Handle OAuth callback and establish session
- * Call this on app initialization to process auth redirects
- * @returns {Promise<{user: Object|null, error: Error|null}>}
- */
-export async function handleAuthCallback() {
-    // Check if URL contains OAuth callback hash
-    const hash = window.location.hash;
-    const hasAuthParams = hash.includes('access_token') || hash.includes('error');
-
-    if (hasAuthParams) {
-        // Supabase automatically processes the hash when getSession is called
-        // Wait a moment for the session to be established
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // Clear the hash from URL without reloading
-        history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-
-    return await getUser();
 }
 
 /**
@@ -87,22 +68,14 @@ export async function handleAuthCallback() {
  * @returns {Promise<Object|null>} - User object if authenticated
  */
 export async function requireAuth(redirectUrl = '/public/login.html') {
-    // First try to handle any OAuth callback
-    const { user, error } = await handleAuthCallback();
+    const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (error || !user) {
-        // Try one more time after a short delay (for race conditions)
-        await new Promise(resolve => setTimeout(resolve, 200));
-        const retry = await getUser();
-
-        if (retry.error || !retry.user) {
-            window.location.href = redirectUrl;
-            return null;
-        }
-        return retry.user;
+    if (error || !session) {
+        window.location.href = redirectUrl;
+        return null;
     }
 
-    return user;
+    return session.user;
 }
 
 /**
