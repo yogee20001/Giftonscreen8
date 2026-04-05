@@ -3,8 +3,8 @@
 
 import { supabase } from './supabase.js';
 
-// Base URL for redirects
-const BASE_URL = window.location.origin;
+// Base URL for redirects - using custom domain
+const BASE_URL = 'https://giftonscreen.shop';
 
 /**
  * Send magic link to user's email for authentication
