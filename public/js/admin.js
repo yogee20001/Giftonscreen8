@@ -30,8 +30,8 @@ function renderAccessDenied() {
     }
 }
 
-// Auth guard
-const user = await requireAuth('/public/login.html');
+// Auth guard - redirect to admin login page
+const user = await requireAuth('/public/admin-login.html');
 if (!user) {
     throw new Error('Authentication required');
 }
@@ -200,7 +200,7 @@ if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
         const { error } = await logout();
         if (!error) {
-            window.location.href = '/public/login.html';
+            window.location.href = '/public/admin-login.html';
         }
     });
 }
