@@ -1,7 +1,7 @@
 // Cloudinary Configuration
 // Handles image uploads for gift photos
 
-const CLOUDINARY_CLOUD_NAME = 'dzy1okmzz';
+const CLOUDINARY_CLOUD_NAME = 'disurt4mx';
 const CLOUDINARY_UPLOAD_PRESET = 'gift_photos';
 const CLOUDINARY_API_KEY = '384744882434684';
 
