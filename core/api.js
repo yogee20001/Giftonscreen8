@@ -170,50 +170,36 @@ export async function markRequestProcessed(requestId) {
 }
 
 // ============================================
-// ADMIN CHECK FUNCTIONS
+// ADMIN CHECK FUNCTIONS (Using Supabase User Metadata)
 // ============================================
 
 /**
- * Check if a user is an admin
- * @param {string} userId - User UUID
- * @returns {Promise<{isAdmin: boolean, error: Error|null}>}
+ * Check if current user is an admin using Supabase user metadata
+ * @returns {Promise<{isAdmin: boolean, role: string|null, error: Error|null}>}
  */
-export async function checkIsAdmin(userId) {
-    const { data, error } = await supabase
-        .from('admins')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
+export async function checkIsAdmin() {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
 
-    return { isAdmin: !!data, error };
+        if (error || !user) {
+            return { isAdmin: false, role: null, error: error || new Error('No user found') };
+        }
+
+        // Check user_metadata for admin role
+        const userRole = user.user_metadata?.role || user.app_metadata?.role;
+        const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+
+        return { isAdmin, role: userRole || null, error: null };
+    } catch (err) {
+        return { isAdmin: false, role: null, error: err };
+    }
 }
 
 /**
- * Check if an email belongs to an admin
- * @param {string} email - Email address
- * @returns {Promise<{isAdmin: boolean, error: Error|null}>}
+ * Check if a specific email has admin role (checks user_metadata)
+ * Note: This requires the user to be logged in to check their own role
+ * @returns {Promise<{isAdmin: boolean, role: string|null, error: Error|null}>}
  */
-export async function checkIsAdminEmail(email) {
-    const { data, error } = await supabase
-        .from('admins')
-        .select('id')
-        .eq('email', email)
-        .single();
-
-    return { isAdmin: !!data, error };
-}
-
-/**
- * Get admin details for a user
- * @param {string} userId - User UUID
- * @returns {Promise<{admin: Object|null, error: Error|null}>}
- */
-export async function getAdminDetails(userId) {
-    const { data: admin, error } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-    return { admin, error };
+export async function checkCurrentUserAdminRole() {
+    return await checkIsAdmin();
 }

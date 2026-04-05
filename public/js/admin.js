@@ -34,15 +34,8 @@ if (!user) {
     throw new Error('Authentication required');
 }
 
-// Check admin access via Supabase
-const { user: currentUser, error: userError } = await getUser();
-if (userError || !currentUser) {
-    renderAccessDenied();
-    throw new Error('Unable to get user profile');
-}
-
-// Verify user is in admins table
-const { isAdmin, error: adminError } = await checkIsAdmin(currentUser.id);
+// Check admin access via Supabase user metadata
+const { isAdmin, error: adminError } = await checkIsAdmin();
 if (adminError || !isAdmin) {
     renderAccessDenied();
     throw new Error('Access denied - not an admin');

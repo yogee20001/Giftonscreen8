@@ -1,8 +1,8 @@
 // Admin Login Page Logic
-// Handles email/password authentication for admins
+// Handles email/password authentication for admins using Supabase user metadata
 
 import { supabase } from '../../core/supabase.js';
-import { checkIsAdminEmail } from '../../core/api.js';
+import { checkIsAdmin } from '../../core/api.js';
 
 const adminLoginForm = document.getElementById('adminLoginForm');
 const messageDiv = document.getElementById('message');
@@ -23,8 +23,8 @@ async function checkExistingSession() {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
-        // Check if user is an admin in Supabase
-        const { isAdmin, error } = await checkIsAdminEmail(session.user.email);
+        // Check if user has admin role in metadata
+        const { isAdmin, error } = await checkIsAdmin();
 
         if (isAdmin && !error) {
             // Already logged in as admin, redirect to admin panel
@@ -46,25 +46,9 @@ adminLoginForm.addEventListener('submit', async (e) => {
 
     // Disable button during login
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Verifying...';
+    loginBtn.textContent = 'Signing in...';
 
     try {
-        // First check if email is in admins table
-        const { isAdmin, error: adminCheckError } = await checkIsAdminEmail(email);
-
-        if (adminCheckError) {
-            console.error('Admin check error:', adminCheckError);
-        }
-
-        if (!isAdmin) {
-            showMessage('Access denied. This email is not authorized as an admin.', 'error');
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Sign In';
-            return;
-        }
-
-        loginBtn.textContent = 'Signing in...';
-
         // Sign in with email and password
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -79,7 +63,23 @@ adminLoginForm.addEventListener('submit', async (e) => {
         }
 
         if (data.session) {
-            showMessage('Login successful! Redirecting...', 'success');
+            // Check if user has admin role in their metadata
+            const { isAdmin, role, error: adminError } = await checkIsAdmin();
+
+            if (adminError) {
+                console.error('Admin check error:', adminError);
+            }
+
+            if (!isAdmin) {
+                // Not an admin - sign them out and show error
+                await supabase.auth.signOut();
+                showMessage('Access denied. This account does not have admin privileges.', 'error');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+                return;
+            }
+
+            showMessage(`Login successful! Role: ${role}. Redirecting...`, 'success');
 
             // Redirect to admin panel after short delay
             setTimeout(() => {
