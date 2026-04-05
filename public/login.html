@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GiftOnScreen</title>
+    <link rel="stylesheet" href="../styles/global.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="card" style="max-width: 400px; margin: 4rem auto;">
+            <h2>Welcome Back</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Enter your email to receive a magic link</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="you@example.com">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Magic Link</button>
+            </form>
+
+            <div id="message" class="message hidden"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/login.js"></script>
+</body>
+
+</html>

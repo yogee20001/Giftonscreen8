@@ -1,0 +1,202 @@
+// Preview Page Logic
+// Renders gift preview in iframe using localStorage data
+
+import { requireAuth, logout } from '../../core/auth.js';
+
+// Auth guard
+await requireAuth('/public/login.html');
+
+// Load preview data from localStorage
+const data = JSON.parse(localStorage.getItem('previewData'));
+
+// Validate data
+if (!data || !data.templateId) {
+    window.location.href = '/public/index.html';
+    throw new Error('Preview data not found');
+}
+
+const container = document.getElementById('preview-frame-container');
+const continueBtn = document.getElementById('continue-btn');
+const logoutBtn = document.getElementById('logoutBtn');
+const giftData = document.getElementById('gift-data');
+
+// Display gift data summary
+giftData.innerHTML = `
+    <p><strong>Template:</strong> ${data.templateId}</p>
+    <p><strong>To:</strong> ${data.receiver}</p>
+    <p><strong>From:</strong> ${data.sender}</p>
+    <p><strong>Message:</strong> ${data.message.substring(0, 100)}${data.message.length > 100 ? '...' : ''}</p>
+`;
+
+// Create iframe for preview
+const iframe = document.createElement('iframe');
+iframe.style.width = '100%';
+iframe.style.height = '500px';
+iframe.style.border = 'none';
+iframe.style.borderRadius = '8px';
+iframe.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+
+container.appendChild(iframe);
+
+// Get iframe document
+const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+// Add base styles
+doc.open();
+doc.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        </style>
+    </head>
+    <body></body>
+    </html>
+`);
+doc.close();
+
+// Load template script
+const script = doc.createElement('script');
+script.type = 'module';
+script.src = `/templates/${data.templateId}/preview.js`;
+
+script.onload = () => {
+    // Check if TEMPLATE exists
+    if (!iframe.contentWindow.TEMPLATE) {
+        container.innerHTML = '<p style="color: #ef4444; text-align: center;">Error: Template not found</p>';
+        return;
+    }
+
+    // Check if renderPreview exists
+    if (typeof iframe.contentWindow.TEMPLATE.renderPreview !== 'function') {
+        container.innerHTML = '<p style="color: #ef4444; text-align: center;">Error: Template preview not available</p>';
+        return;
+    }
+
+    // Create container for template content
+    const templateContainer = doc.createElement('div');
+    templateContainer.id = 'template-content';
+    doc.body.appendChild(templateContainer);
+
+    // Render preview
+    try {
+        iframe.contentWindow.TEMPLATE.renderPreview(data, templateContainer);
+    } catch (err) {
+        container.innerHTML = `<p style="color: #ef4444; text-align: center;">Error rendering preview: ${err.message}</p>`;
+    }
+};
+
+script.onerror = () => {
+    container.innerHTML = '<p style="color: #ef4444; text-align: center;">Error: Failed to load template</p>';
+};
+
+doc.body.appendChild(script);
+
+let giftId = null;
+
+// Continue button - create actual gift in database
+continueBtn.addEventListener('click', async () => {
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Creating gift...';
+
+    // Import here to avoid circular dependencies if any
+    const { createGift } = await import('../../core/api.js');
+
+    const { gift, error } = await createGift({
+        template_id: data.templateId,
+        receiver: data.receiver,
+        sender: data.sender,
+        message: data.message,
+        photoUrl: null,
+        musicUrl: null
+    });
+
+    if (error) {
+        alert('Error creating gift: ' + error.message);
+        continueBtn.disabled = false;
+        continueBtn.textContent = 'Continue to Activate';
+        return;
+    }
+
+    giftId = gift.id;
+
+    // Hide continue section, show activation section
+    continueBtn.parentElement.style.display = 'none';
+    document.getElementById('activation-section').style.display = 'block';
+
+    // Update gift data display with ID
+    giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
+});
+
+// Activate on WhatsApp button
+const activateBtn = document.getElementById('activate-btn');
+const statusMsg = document.getElementById('status-msg');
+
+activateBtn.addEventListener('click', async () => {
+    if (!giftId) {
+        statusMsg.textContent = 'Error: Gift not created yet';
+        statusMsg.style.color = '#ef4444';
+        return;
+    }
+
+    // Prevent duplicate clicks
+    if (activateBtn.disabled) return;
+    activateBtn.disabled = true;
+    statusMsg.textContent = 'Opening WhatsApp...';
+
+    try {
+        // Import API function
+        const { createActivationRequest, getUserProfile } = await import('../../core/api.js');
+        const { user: currentUser } = await getUserProfile();
+
+        if (!currentUser) {
+            throw new Error('User not authenticated');
+        }
+
+        // Create WhatsApp message
+        const whatsappMessage = `
+GiftOnScreen Activation Request
+
+Gift ID: ${giftId}
+User Email: ${currentUser.email}
+Template: ${data.templateId}
+Amount: ₹59
+
+Please confirm payment to activate this gift.`;
+
+        // Save activation request to database
+        await createActivationRequest({
+            gift_id: giftId,
+            user_id: currentUser.id,
+            message: whatsappMessage
+        });
+
+        // Admin WhatsApp number (replace with actual number)
+        const ADMIN_WHATSAPP = '919999999999'; // Replace with actual admin number
+
+        // Open WhatsApp
+        const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
+        window.open(whatsappUrl, '_blank');
+
+        // Show feedback
+        statusMsg.textContent = 'After payment, your gift will be activated shortly. You can check the status in My Gifts.';
+        statusMsg.style.color = '#059669';
+
+    } catch (error) {
+        console.error('Activation error:', error);
+        statusMsg.textContent = 'Error: ' + error.message;
+        statusMsg.style.color = '#ef4444';
+        activateBtn.disabled = false;
+    }
+});
+
+logoutBtn.addEventListener('click', async () => {
+    const { error } = await logout();
+    if (!error) {
+        window.location.href = '/public/login.html';
+    }
+});

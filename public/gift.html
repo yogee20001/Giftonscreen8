@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Gift - GiftOnScreen</title>
+    <link rel="stylesheet" href="../styles/global.css">
+</head>
+
+<body>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>GiftOnScreen</h1>
+            <nav>
+                <a href="create.html">Create Gift</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>View Gift</h2>
+            <p style="color: #666;">This page is a placeholder for the gift viewing system.</p>
+            <p style="color: #666; margin-top: 1rem;">Gift rendering will be implemented in the next phase via
+                Cloudflare Workers.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { requireAuth } from '../core/auth.js';
+        await requireAuth('/public/login.html');
+    </script>
+</body>
+
+</html>

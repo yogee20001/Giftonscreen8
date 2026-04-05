@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Gift - GiftOnScreen</title>
+    <link rel="stylesheet" href="../styles/global.css">
+    <style>
+        #preview-frame-container {
+            background: #f3f4f6;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .gift-summary {
+            background: #f9fafb;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .gift-summary p {
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .gift-summary p:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-section {
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .action-section p {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .activation-section {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f0fdf4;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>GiftOnScreen</h1>
+            <div>
+                <a href="index.html" class="btn btn-secondary" style="margin-right: 0.5rem;">Templates</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Preview Your Gift</h2>
+
+            <div id="gift-data" class="gift-summary">
+                <p>Loading gift data...</p>
+            </div>
+
+            <div id="preview-frame-container"></div>
+
+            <div class="action-section">
+                <p>Ready to share?</p>
+                <button id="continue-btn" class="btn btn-primary">Continue to Activate</button>
+            </div>
+
+            <div class="activation-section" id="activation-section" style="display: none;">
+                <div class="divider"></div>
+                <h3 style="margin-bottom: 1rem; color: #374151;">Activate Your Gift</h3>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                    Pay ₹59 via WhatsApp to activate this gift. Once activated, you can share the link with your loved
+                    one!
+                </p>
+                <button id="activate-btn" class="btn btn-primary" style="background: #10b981;">
+                    💬 Activate on WhatsApp
+                </button>
+                <p id="status-msg" style="margin-top: 1rem; color: #059669; font-size: 0.9rem;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/preview.js"></script>
+</body>
+
+</html>

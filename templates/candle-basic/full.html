@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Special Gift</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(251, 191, 36, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .candle-container {
+            margin-bottom: 40px;
+        }
+
+        .candle {
+            font-size: 120px;
+            display: inline-block;
+            animation: flicker 3s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.8));
+        }
+
+        @keyframes flicker {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            25% {
+                opacity: 0.9;
+                transform: scale(0.98);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+
+            75% {
+                opacity: 0.95;
+                transform: scale(0.99);
+            }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 30px;
+            color: #fbbf24;
+            text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+            }
+
+            to {
+                text-shadow: 0 0 60px rgba(251, 191, 36, 0.8), 0 0 100px rgba(251, 191, 36, 0.4);
+            }
+        }
+
+        .message-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .message {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            color: #e5e7eb;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .sender {
+            font-size: 1.2rem;
+            color: #9ca3af;
+        }
+
+        .sender-name {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .gift-icon {
+            font-size: 24px;
+            margin: 0 5px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .message {
+                font-size: 1.2rem;
+            }
+
+            .candle {
+                font-size: 80px;
+            }
+
+            .message-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="content">
+            <div class="candle-container">
+                <span class="candle">🕯️</span>
+            </div>
+
+            <h1 id="title">Happy Birthday!</h1>
+
+            <div class="message-card">
+                <p class="message" id="message">Your special message will appear here...</p>
+                <p class="sender">
+                    With love,<br>
+                    <span class="sender-name" id="sender">Your Name</span>
+                </p>
+            </div>
+
+            <div class="footer">
+                <p>
+                    <span class="gift-icon">🎁</span>
+                    Sent with GiftOnScreen
+                    <span class="gift-icon">💝</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gift data injected by Worker
+        const GIFT_DATA = {{ DATA }};
+
+        // Render gift content
+        function renderGift() {
+            if (!GIFT_DATA) return;
+
+            // Set title
+            const title = document.getElementById('title');
+            if (title && GIFT_DATA.receiver) {
+                title.textContent = `Happy Birthday ${GIFT_DATA.receiver}!`;
+            }
+
+            // Set message
+            const messageEl = document.getElementById('message');
+            if (messageEl && GIFT_DATA.message) {
+                messageEl.textContent = GIFT_DATA.message;
+            }
+
+            // Set sender
+            const senderEl = document.getElementById('sender');
+            if (senderEl && GIFT_DATA.sender) {
+                senderEl.textContent = GIFT_DATA.sender;
+            }
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGift();
+            createParticles();
+        });
+    </script>
+</body>
+
+</html>
