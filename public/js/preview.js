@@ -98,14 +98,15 @@ doc.body.appendChild(script);
 
 let giftId = null;
 
-// Continue button - create actual gift in database and activation request
+// Continue button - create actual gift in database and activation request immediately
 continueBtn.addEventListener('click', async () => {
     continueBtn.disabled = true;
     continueBtn.textContent = 'Creating gift...';
 
-    // Import here to avoid circular dependencies if any
+    // Import API functions
     const { createGift, createActivationRequest, getUserProfile } = await import('../../core/api.js');
 
+    // Step 1: Create the gift
     const { gift, error } = await createGift({
         template_id: data.templateId,
         receiver: data.receiver,
@@ -124,39 +125,39 @@ continueBtn.addEventListener('click', async () => {
 
     giftId = gift.id;
 
-    // Create activation request immediately so admin sees it as pending
+    // Step 2: IMMEDIATELY create activation request (before showing WhatsApp button)
+    // This ensures admin sees the pending gift right away
     try {
         const { user: currentUser } = await getUserProfile();
 
         if (currentUser) {
-            const activationMessage = `
-GiftOnScreen Activation Request
-
+            const activationMessage = `GiftOnScreen Activation Request
 Gift ID: ${giftId}
 User Email: ${currentUser.email}
 Template: ${data.templateId}
 Amount: ₹59
-
-Pending payment confirmation.`;
+Status: Pending payment`;
 
             await createActivationRequest({
                 gift_id: giftId,
                 user_id: currentUser.id,
                 message: activationMessage
             });
+
+            console.log('✅ Activation request created for admin:', giftId);
         }
     } catch (err) {
-        console.error('Error creating activation request:', err);
-        // Don't fail the flow if activation request creation fails
+        console.error('❌ Error creating activation request:', err);
+        // Continue even if this fails - gift is already created
     }
 
-    // Hide continue section, show activation section
+    // Step 3: Show activation section with WhatsApp button
     continueBtn.parentElement.style.display = 'none';
     document.getElementById('activation-section').style.display = 'block';
 
-    // Update gift data display with ID and status
+    // Update gift data display
     giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
-    giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation</span></p>`;
+    giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation (Admin Notified)</span></p>`;
 });
 
 // Activate on WhatsApp button
