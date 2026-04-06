@@ -15,8 +15,8 @@ ENVIRONMENT = "production"
 [env.production]
 vars = { ENVIRONMENT = "production" }
 
-[env.staging]
-vars = { ENVIRONMENT = "staging" }
+[env.preview]
+vars = { ENVIRONMENT = "preview" }
 
 # Secrets to be set via wrangler secret put:
 # - SUPABASE_URL
