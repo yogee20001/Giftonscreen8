@@ -1,0 +1,29 @@
+# Cloudflare Pages Configuration for GiftOnScreen
+# This configuration deploys the frontend to Cloudflare Pages
+
+name = "giftonscreen8"
+compatibility_date = "2024-01-01"
+
+# Build configuration
+pages_build_output_dir = "."
+
+# Environment variables (non-sensitive)
+[vars]
+ENVIRONMENT = "production"
+
+# Environment-specific configuration
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+
+# Secrets to be set via wrangler secret put:
+# - SUPABASE_URL
+# - SUPABASE_ANON_KEY
+# - SUPABASE_SERVICE_KEY
+# - CLOUDINARY_CLOUD_NAME
+# - CLOUDINARY_API_KEY
+# - CLOUDINARY_API_SECRET
+# - GITHUB_TOKEN
+# - GITHUB_REPO

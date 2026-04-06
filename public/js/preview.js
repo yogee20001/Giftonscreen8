@@ -98,13 +98,13 @@ doc.body.appendChild(script);
 
 let giftId = null;
 
-// Continue button - create actual gift in database
+// Continue button - create actual gift in database and activation request
 continueBtn.addEventListener('click', async () => {
     continueBtn.disabled = true;
     continueBtn.textContent = 'Creating gift...';
 
     // Import here to avoid circular dependencies if any
-    const { createGift } = await import('../../core/api.js');
+    const { createGift, createActivationRequest, getUserProfile } = await import('../../core/api.js');
 
     const { gift, error } = await createGift({
         template_id: data.templateId,
@@ -118,18 +118,45 @@ continueBtn.addEventListener('click', async () => {
     if (error) {
         alert('Error creating gift: ' + error.message);
         continueBtn.disabled = false;
-        continueBtn.textContent = 'Continue to Activate';
+        continueBtn.textContent = 'Create Gift';
         return;
     }
 
     giftId = gift.id;
 
+    // Create activation request immediately so admin sees it as pending
+    try {
+        const { user: currentUser } = await getUserProfile();
+
+        if (currentUser) {
+            const activationMessage = `
+GiftOnScreen Activation Request
+
+Gift ID: ${giftId}
+User Email: ${currentUser.email}
+Template: ${data.templateId}
+Amount: ₹59
+
+Pending payment confirmation.`;
+
+            await createActivationRequest({
+                gift_id: giftId,
+                user_id: currentUser.id,
+                message: activationMessage
+            });
+        }
+    } catch (err) {
+        console.error('Error creating activation request:', err);
+        // Don't fail the flow if activation request creation fails
+    }
+
     // Hide continue section, show activation section
     continueBtn.parentElement.style.display = 'none';
     document.getElementById('activation-section').style.display = 'block';
 
-    // Update gift data display with ID
+    // Update gift data display with ID and status
     giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
+    giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation</span></p>`;
 });
 
 // Activate on WhatsApp button
@@ -150,14 +177,14 @@ activateBtn.addEventListener('click', async () => {
 
     try {
         // Import API function
-        const { createActivationRequest, getUserProfile } = await import('../../core/api.js');
+        const { getUserProfile } = await import('../../core/api.js');
         const { user: currentUser } = await getUserProfile();
 
         if (!currentUser) {
             throw new Error('User not authenticated');
         }
 
-        // Create WhatsApp message
+        // Create WhatsApp message (activation request already created when gift was created)
         const whatsappMessage = `
 GiftOnScreen Activation Request
 
@@ -167,13 +194,6 @@ Template: ${data.templateId}
 Amount: ₹59
 
 Please confirm payment to activate this gift.`;
-
-        // Save activation request to database
-        await createActivationRequest({
-            gift_id: giftId,
-            user_id: currentUser.id,
-            message: whatsappMessage
-        });
 
         // Admin WhatsApp number (replace with actual number)
         const ADMIN_WHATSAPP = '919999999999'; // Replace with actual admin number
