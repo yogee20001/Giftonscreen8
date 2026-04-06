@@ -161,20 +161,40 @@
             font-weight: 600;
         }
 
-        .footer {
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        /* Photo Gallery Styles */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .footer p {
-            color: #6b7280;
-            font-size: 0.9rem;
+        .photo-gallery.single-photo {
+            grid-template-columns: 1fr;
+            max-width: 300px;
         }
 
-        .gift-icon {
-            font-size: 24px;
-            margin: 0 5px;
+        .photo-item {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 3px solid rgba(251, 191, 36, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(251, 191, 36, 0.2);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
         }
 
         @media (max-width: 600px) {
@@ -193,6 +213,31 @@
             .message-card {
                 padding: 30px 20px;
             }
+
+            .photo-gallery {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .photo-item img {
+                height: 180px;
+            }
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .gift-icon {
+            font-size: 24px;
+            margin: 0 5px;
         }
     </style>
 </head>
@@ -210,6 +255,10 @@
 
             <div class="message-card">
                 <p class="message" id="message">Your special message will appear here...</p>
+
+                <!-- Photo Gallery Container -->
+                <div id="photoGallery" class="photo-gallery" style="display: none;"></div>
+
                 <p class="sender">
                     With love,<br>
                     <span class="sender-name" id="sender">Your Name</span>
@@ -251,6 +300,49 @@
             if (senderEl && GIFT_DATA.sender) {
                 senderEl.textContent = GIFT_DATA.sender;
             }
+
+            // Render photos
+            renderPhotos();
+        }
+
+        // Render photos in gallery
+        function renderPhotos() {
+            const gallery = document.getElementById('photoGallery');
+            const photos = GIFT_DATA.photos || GIFT_DATA.photoUrl;
+
+            if (!photos || photos.length === 0) {
+                gallery.style.display = 'none';
+                return;
+            }
+
+            // Handle both array and single URL
+            let photoList = [];
+            if (Array.isArray(photos)) {
+                photoList = photos.slice(0, 2); // Get up to 2 photos
+            } else if (typeof photos === 'string') {
+                photoList = [photos];
+            }
+
+            if (photoList.length === 0) {
+                gallery.style.display = 'none';
+                return;
+            }
+
+            // Apply single-photo class if only one photo
+            if (photoList.length === 1) {
+                gallery.classList.add('single-photo');
+            } else {
+                gallery.classList.remove('single-photo');
+            }
+
+            // Generate photo HTML
+            gallery.innerHTML = photoList.map(url => `
+                <div class="photo-item">
+                    <img src="${url}" alt="Gift photo">
+                </div>
+            `).join('');
+
+            gallery.style.display = 'grid';
         }
 
         // Create floating particles
