@@ -151,13 +151,17 @@ Status: Pending payment`;
         // Continue even if this fails - gift is already created
     }
 
-    // Step 3: Show activation section with WhatsApp button
+    // Step 3: Show admin notified banner FIRST, then activation section
+    document.getElementById('admin-notified-banner').style.display = 'block';
     continueBtn.parentElement.style.display = 'none';
     document.getElementById('activation-section').style.display = 'block';
 
     // Update gift data display
     giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
-    giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation (Admin Notified)</span></p>`;
+    giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation</span></p>`;
+
+    // Alert for immediate feedback (remove after testing)
+    alert('✅ Gift created! Admin has been automatically notified. You can now complete payment via WhatsApp.');
 });
 
 // Activate on WhatsApp button
