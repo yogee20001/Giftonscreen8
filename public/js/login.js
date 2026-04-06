@@ -8,6 +8,19 @@ const loginForm = document.getElementById('loginForm');
 const googleSignInBtn = document.getElementById('googleSignInBtn');
 const messageDiv = document.getElementById('message');
 
+// Get redirect parameters from URL
+const urlParams = new URLSearchParams(window.location.search);
+const redirectTarget = urlParams.get('redirect');
+const templateId = urlParams.get('template');
+
+// Store redirect info for after login
+if (redirectTarget) {
+    sessionStorage.setItem('redirectAfterLogin', redirectTarget);
+}
+if (templateId) {
+    sessionStorage.setItem('selectedTemplate', templateId);
+}
+
 function showMessage(text, type = 'success') {
     messageDiv.textContent = text;
     messageDiv.className = `message message-${type}`;

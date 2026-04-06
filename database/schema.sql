@@ -26,6 +26,13 @@ CREATE POLICY "Allow authenticated users to read templates"
     TO authenticated
     USING (true);
 
+-- Allow anonymous users to read active templates
+CREATE POLICY "Allow anonymous users to read active templates"
+    ON templates
+    FOR SELECT
+    TO anon
+    USING (is_active = true);
+
 -- ============================================
 -- GIFTS TABLE
 -- ============================================

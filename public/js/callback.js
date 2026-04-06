@@ -20,6 +20,19 @@ function showSuccess() {
     statusEl.textContent = 'Success! Redirecting...';
 }
 
+// Get redirect URL from sessionStorage
+function getRedirectUrl() {
+    const redirect = sessionStorage.getItem('redirectAfterLogin');
+    const template = sessionStorage.getItem('selectedTemplate');
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('selectedTemplate');
+
+    if (redirect === 'create' && template) {
+        return `/public/create.html?template=${template}`;
+    }
+    return '/public/index.html';
+}
+
 async function handleCallback() {
     try {
         // Check for error in URL
@@ -44,7 +57,7 @@ async function handleCallback() {
             if (session) {
                 showSuccess();
                 setTimeout(() => {
-                    window.location.replace('/public/index.html');
+                    window.location.replace(getRedirectUrl());
                 }, 500);
                 return;
             }
@@ -76,9 +89,9 @@ async function handleCallback() {
                 // Clear the hash from URL without reloading
                 history.replaceState(null, '', '/public/callback.html');
 
-                // Redirect to app
+                // Redirect to intended page
                 setTimeout(() => {
-                    window.location.replace('/public/index.html');
+                    window.location.replace(getRedirectUrl());
                 }, 500);
                 return;
             }

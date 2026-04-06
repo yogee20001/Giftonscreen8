@@ -1,13 +1,42 @@
 // Homepage Logic
-// Fetches and displays template feed
+// Fetches and displays template feed - accessible to all users
 
-import { requireAuth } from '../../core/auth.js';
+import { getUser } from '../../core/auth.js';
 import { getTemplates } from '../../core/api.js';
 
-// Auth guard
-await requireAuth('/public/login.html');
-
 const templateList = document.getElementById('template-list');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// Check auth status and update UI
+let currentUser = null;
+
+async function checkAuth() {
+    const { user } = await getUser();
+    currentUser = user;
+    updateAuthUI();
+}
+
+function updateAuthUI() {
+    if (logoutBtn) {
+        if (currentUser) {
+            logoutBtn.textContent = 'Logout';
+            logoutBtn.onclick = handleLogout;
+        } else {
+            logoutBtn.textContent = 'Login';
+            logoutBtn.onclick = () => {
+                window.location.href = '/public/login.html';
+            };
+        }
+    }
+}
+
+async function handleLogout() {
+    const { logout } = await import('../../core/auth.js');
+    const { error } = await logout();
+    if (!error) {
+        window.location.reload();
+    }
+}
 
 function renderTemplates(templates) {
     if (!templates || templates.length === 0) {
@@ -32,9 +61,20 @@ function renderTemplates(templates) {
     templateList.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', () => {
             const templateId = card.dataset.id;
-            window.location.href = `/public/create.html?template=${templateId}`;
+            handleTemplateClick(templateId);
         });
     });
+}
+
+async function handleTemplateClick(templateId) {
+    if (currentUser) {
+        // User is logged in, go directly to create page
+        window.location.href = `/public/create.html?template=${templateId}`;
+    } else {
+        // User is not logged in, store template and redirect to login
+        sessionStorage.setItem('selectedTemplate', templateId);
+        window.location.href = `/public/login.html?redirect=create&template=${templateId}`;
+    }
 }
 
 async function loadTemplates() {
@@ -50,4 +90,6 @@ async function loadTemplates() {
     renderTemplates(templates);
 }
 
+// Initialize
+await checkAuth();
 await loadTemplates();

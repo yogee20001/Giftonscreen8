@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "include": [
+        "/*"
+    ],
+    "exclude": [],
+    "routes": [
+        {
+            "src": "/templates/.*",
+            "status": 403,
+            "destination": "/403.html"
+        }
+    ]
+}
