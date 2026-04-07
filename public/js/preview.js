@@ -125,7 +125,7 @@ doc.body.appendChild(script);
 
 let giftId = null;
 
-// Continue button - create actual gift in database and activation request immediately
+// Continue button - create actual gift in database and redirect to success page
 continueBtn.addEventListener('click', async () => {
     continueBtn.disabled = true;
     continueBtn.textContent = 'Checking login...';
@@ -164,8 +164,7 @@ continueBtn.addEventListener('click', async () => {
 
     giftId = gift.id;
 
-    // Step 2: IMMEDIATELY create activation request (before showing WhatsApp button)
-    // This ensures admin sees the pending gift right away
+    // Step 2: IMMEDIATELY create activation request
     try {
         const { user: currentUser } = await getUserProfile();
 
@@ -187,36 +186,10 @@ Status: Pending payment`;
         }
     } catch (err) {
         console.error('❌ Error creating activation request:', err);
-        // Continue even if this fails - gift is already created
     }
 
-    // Step 3: Show admin notified banner FIRST, then activation section
-    document.getElementById('admin-notified-banner').style.display = 'block';
-    continueBtn.parentElement.style.display = 'none';
-    document.getElementById('activation-section').style.display = 'block';
-
-    // Update gift data display
-    giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
-    giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation</span></p>`;
-
-    // Populate gift link using custom domain
-    const giftLink = `${GIFT_BASE_URL}/g/${giftId}`;
-    const giftLinkInput = document.getElementById('gift-link-input');
-    giftLinkInput.value = giftLink;
-
-    // Add copy button functionality
-    const copyBtn = document.getElementById('copy-link-btn');
-    copyBtn.addEventListener('click', () => {
-        giftLinkInput.select();
-        document.execCommand('copy');
-        copyBtn.textContent = '✅ Copied!';
-        setTimeout(() => {
-            copyBtn.textContent = '📋 Copy';
-        }, 2000);
-    });
-
-    // Alert for immediate feedback (remove after testing)
-    alert('✅ Gift created! Admin has been automatically notified. You can now complete payment via WhatsApp.');
+    // Step 3: Redirect to success page
+    window.location.href = `/public/success.html?giftId=${giftId}`;
 });
 
 // Activate on WhatsApp button

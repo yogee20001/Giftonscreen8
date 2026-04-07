@@ -417,12 +417,16 @@
 
     <script type="module">
         import { getUser, getUserProfile } from '../core/auth.js';
-        import { createGift, createActivationRequest } from '../core/api.js';
+        import { getGift } from '../core/api.js';
 
         const GIFT_BASE_URL = 'https://giftonscreen.shop';
         const ADMIN_WHATSAPP = '919999999999';
 
-        // Get preview data from localStorage
+        // Get gift ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const giftId = urlParams.get('giftId');
+
+        // Get preview data from localStorage (for receiver/sender info)
         const previewData = JSON.parse(localStorage.getItem('previewData'));
 
         // Elements
@@ -433,8 +437,9 @@
 
         // Initialize
         async function init() {
-            if (!previewData) {
-                showError('No gift data found. Please create a gift first.');
+            // Check if giftId is in URL
+            if (!giftId) {
+                showError('No gift ID found. Please create a gift first.');
                 return;
             }
 
@@ -443,66 +448,51 @@
                 const { user } = await getUser();
                 if (!user) {
                     // Save redirect and go to login
-                    sessionStorage.setItem('redirectAfterLogin', 'success');
-                    window.location.href = '/public/login.html?redirect=success';
+                    sessionStorage.setItem('redirectAfterLogin', `success?giftId=${giftId}`);
+                    window.location.href = `/public/login.html?redirect=success&giftId=${giftId}`;
                     return;
                 }
 
-                // Create the gift
-                const result = await createGift({
-                    template_id: previewData.templateId,
-                    receiver: previewData.receiver,
-                    sender: previewData.sender,
-                    message: previewData.message,
-                    photoUrl: null,
-                    musicUrl: null
-                });
+                // Fetch gift details
+                const { gift, error } = await getGift(giftId);
 
-                if (result.error) {
-                    throw new Error(result.error.message);
+                if (error || !gift) {
+                    throw new Error('Gift not found or has been removed.');
                 }
 
-                const giftId = result.gift.id;
-
-                // Create activation request
-                try {
-                    const { user: currentUser } = await getUserProfile();
-                    if (currentUser) {
-                        const activationMessage = `GiftOnScreen Activation Request\nGift ID: ${giftId}\nUser Email: ${currentUser.email}\nTemplate: ${previewData.templateId}\nAmount: ₹59\nStatus: Pending payment`;
-
-                        await createActivationRequest({
-                            gift_id: giftId,
-                            user_id: currentUser.id,
-                            message: activationMessage
-                        });
-                    }
-                } catch (err) {
-                    console.error('Activation request error:', err);
-                }
-
-                // Show success
-                showSuccess(giftId);
+                // Show success with gift data
+                showSuccess(gift);
 
                 // Clear preview data
                 localStorage.removeItem('previewData');
 
             } catch (error) {
-                console.error('Error creating gift:', error);
-                showError(error.message || 'Failed to create gift. Please try again.');
+                console.error('Error loading gift:', error);
+                showError(error.message || 'Failed to load gift details. Please try again.');
             }
         }
 
-        function showSuccess(giftId) {
+        function showSuccess(gift) {
             loadingState.classList.add('hidden');
             successState.classList.remove('hidden');
 
-            // Update gift info
-            document.getElementById('gift-id').textContent = giftId;
-            document.getElementById('receiver-name').textContent = previewData.receiver;
-            document.getElementById('sender-name').textContent = previewData.sender;
+            // Update gift info from API response
+            document.getElementById('gift-id').textContent = gift.id;
+            document.getElementById('receiver-name').textContent = gift.receiver;
+            document.getElementById('sender-name').textContent = gift.sender;
+
+            // Update status display
+            const statusEl = document.getElementById('gift-status');
+            if (gift.active) {
+                statusEl.textContent = 'Active';
+                statusEl.className = 'gift-info-value status-active';
+            } else {
+                statusEl.textContent = 'Pending Activation';
+                statusEl.className = 'gift-info-value status-pending';
+            }
 
             // Update share link
-            const shareLink = `${GIFT_BASE_URL}/g/${giftId}`;
+            const shareLink = `${GIFT_BASE_URL}/g/${gift.id}`;
             const shareInput = document.getElementById('share-link');
             shareInput.value = shareLink;
 
@@ -520,7 +510,8 @@
             // WhatsApp button
             document.getElementById('whatsapp-btn').addEventListener('click', async () => {
                 const { user: currentUser } = await getUserProfile();
-                const whatsappMessage = `GiftOnScreen Activation Request\n\nGift ID: ${giftId}\nUser Email: ${currentUser?.email || 'Unknown'}\nTemplate: ${previewData.templateId}\nAmount: ₹59\n\nPlease confirm payment to activate this gift.`;
+                const templateId = previewData?.templateId || 'default';
+                const whatsappMessage = `GiftOnScreen Activation Request\n\nGift ID: ${gift.id}\nUser Email: ${currentUser?.email || 'Unknown'}\nTemplate: ${templateId}\nAmount: ₹59\n\nPlease confirm payment to activate this gift.`;
 
                 const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
                 window.open(whatsappUrl, '_blank');
