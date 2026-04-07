@@ -3,6 +3,33 @@
 
 import { getUser, logout } from '../../core/auth.js';
 
+// Check auth and update UI
+async function checkAuth() {
+    const { user } = await getUser();
+    updateAuthUI(user);
+}
+
+function updateAuthUI(user) {
+    if (logoutBtn) {
+        if (user) {
+            logoutBtn.textContent = 'Logout';
+            logoutBtn.onclick = handleLogout;
+        } else {
+            logoutBtn.textContent = 'Login';
+            logoutBtn.onclick = () => {
+                window.location.href = '/public/login.html';
+            };
+        }
+    }
+}
+
+async function handleLogout() {
+    const { error } = await logout();
+    if (!error) {
+        window.location.reload();
+    }
+}
+
 // Load preview data from localStorage
 const data = JSON.parse(localStorage.getItem('previewData'));
 
@@ -228,9 +255,5 @@ Please confirm payment to activate this gift.`;
     }
 });
 
-logoutBtn.addEventListener('click', async () => {
-    const { error } = await logout();
-    if (!error) {
-        window.location.href = '/public/login.html';
-    }
-});
+// Initialize auth check
+checkAuth();

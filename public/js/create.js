@@ -5,6 +5,33 @@ import { logout, getUser } from '../../core/auth.js';
 import { getTemplates } from '../../core/api.js';
 import { uploadMultipleImages } from '../../core/cloudinary.js';
 
+// Check auth and update UI
+async function checkAuth() {
+    const { user } = await getUser();
+    updateAuthUI(user);
+}
+
+function updateAuthUI(user) {
+    if (logoutBtn) {
+        if (user) {
+            logoutBtn.textContent = 'Logout';
+            logoutBtn.onclick = handleLogout;
+        } else {
+            logoutBtn.textContent = 'Login';
+            logoutBtn.onclick = () => {
+                window.location.href = '/public/login.html';
+            };
+        }
+    }
+}
+
+async function handleLogout() {
+    const { error } = await logout();
+    if (!error) {
+        window.location.reload();
+    }
+}
+
 // Get template ID from URL
 const params = new URLSearchParams(window.location.search);
 const templateId = params.get('template');
@@ -121,7 +148,7 @@ createGiftForm.addEventListener('submit', async (e) => {
 
     const receiver = document.getElementById('receiver').value.trim();
     const sender = document.getElementById('sender').value.trim();
-    const message = document.getElementById('message').value.trim();
+    const message = document.getElementById('messageInput').value.trim();
 
     // Validation
     if (!receiver || !sender || !message) {
@@ -158,9 +185,5 @@ createGiftForm.addEventListener('submit', async (e) => {
     window.location.href = '/public/preview.html';
 });
 
-logoutBtn.addEventListener('click', async () => {
-    const { error } = await logout();
-    if (!error) {
-        window.location.href = '/public/login.html';
-    }
-});
+// Initialize auth check
+checkAuth();
