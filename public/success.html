@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Created Successfully - GiftOnScreen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles/global.css">
+    <style>
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0F0F14 0%, #1a0a2e 50%, #0F0F14 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: -2;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Success Card */
+        .success-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            backdrop-filter: blur(24px);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            text-align: center;
+        }
+
+        .success-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-xl);
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%, rgba(255, 77, 141, 0.1) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Success Icon */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+            animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .success-message {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Gift Info */
+        .gift-info {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .gift-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .gift-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .gift-info-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .gift-info-value {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .gift-info-value.status-pending {
+            color: var(--warning);
+        }
+
+        .gift-info-value.status-active {
+            color: var(--success);
+        }
+
+        /* Share Link Section */
+        .share-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .share-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: block;
+            text-align: left;
+        }
+
+        .share-link-box {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 77, 141, 0.1) 100%);
+            border: 2px dashed var(--brand-pink);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .share-link-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: monospace;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-bottom: 0.75rem;
+            outline: none;
+        }
+
+        .share-link-input:focus {
+            border-color: var(--brand-pink);
+        }
+
+        .share-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-pill);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-main);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(255, 77, 141, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 77, 141, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--glass-border-hover);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* Countdown */
+        .countdown {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        .countdown span {
+            color: var(--accent-peach);
+            font-weight: 600;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            border: 3px solid var(--glass-border);
+            border-top-color: var(--brand-pink);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Hidden by default */
+        .hidden {
+            display: none !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="success-card">
+        <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p style="color: var(--text-secondary);">Creating your gift...</p>
+        </div>
+    </div>
+
+    <!-- Success State -->
+    <div id="success-state" class="success-card hidden">
+        <div class="success-icon">✓</div>
+        <h1 class="success-title">Gift Created!</h1>
+        <p class="success-message">
+            Your beautiful digital gift has been created successfully. Share the link below with your loved one.
+        </p>
+
+        <!-- Gift Info -->
+        <div class="gift-info">
+            <div class="gift-info-row">
+                <span class="gift-info-label">Gift ID</span>
+                <span class="gift-info-value" id="gift-id">--</span>
+            </div>
+            <div class="gift-info-row">
+                <span class="gift-info-label">To</span>
+                <span class="gift-info-value" id="receiver-name">--</span>
+            </div>
+            <div class="gift-info-row">
+                <span class="gift-info-label">From</span>
+                <span class="gift-info-value" id="sender-name">--</span>
+            </div>
+            <div class="gift-info-row">
+                <span class="gift-info-label">Status</span>
+                <span class="gift-info-value status-pending" id="gift-status">Pending Activation</span>
+            </div>
+        </div>
+
+        <!-- Share Link -->
+        <div class="share-section">
+            <label class="share-label">🔗 Share this link</label>
+            <div class="share-link-box">
+                <input type="text" id="share-link" class="share-link-input" readonly value="">
+                <p class="share-hint">Tap to copy and share with your recipient</p>
+            </div>
+            <button id="copy-btn" class="btn btn-primary">
+                <span>📋</span>
+                Copy Link
+            </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button id="whatsapp-btn" class="btn btn-whatsapp">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Pay ₹59 on WhatsApp
+            </button>
+            <a href="index.html" class="btn btn-secondary">
+                <span>🏠</span>
+                Back to Home
+            </a>
+            <a href="create.html" class="btn btn-secondary">
+                <span>✨</span>
+                Create Another Gift
+            </a>
+        </div>
+
+        <p class="countdown">
+            Redirecting to home in <span id="countdown">30</span> seconds
+        </p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="success-card hidden">
+        <div class="success-icon" style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);">✕</div>
+        <h1 class="success-title">Oops!</h1>
+        <p class="success-message" id="error-message">
+            Something went wrong while creating your gift.
+        </p>
+        <a href="create.html" class="btn btn-primary" style="margin-top: 1rem;">
+            Try Again
+        </a>
+    </div>
+
+    <script type="module">
+        import { getUser, getUserProfile } from '../core/auth.js';
+        import { createGift, createActivationRequest } from '../core/api.js';
+
+        const GIFT_BASE_URL = 'https://giftonscreen.shop';
+        const ADMIN_WHATSAPP = '919999999999';
+
+        // Get preview data from localStorage
+        const previewData = JSON.parse(localStorage.getItem('previewData'));
+
+        // Elements
+        const loadingState = document.getElementById('loading-state');
+        const successState = document.getElementById('success-state');
+        const errorState = document.getElementById('error-state');
+        const countdownEl = document.getElementById('countdown');
+
+        // Initialize
+        async function init() {
+            if (!previewData) {
+                showError('No gift data found. Please create a gift first.');
+                return;
+            }
+
+            try {
+                // Check authentication
+                const { user } = await getUser();
+                if (!user) {
+                    // Save redirect and go to login
+                    sessionStorage.setItem('redirectAfterLogin', 'success');
+                    window.location.href = '/public/login.html?redirect=success';
+                    return;
+                }
+
+                // Create the gift
+                const result = await createGift({
+                    template_id: previewData.templateId,
+                    receiver: previewData.receiver,
+                    sender: previewData.sender,
+                    message: previewData.message,
+                    photoUrl: null,
+                    musicUrl: null
+                });
+
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+
+                const giftId = result.gift.id;
+
+                // Create activation request
+                try {
+                    const { user: currentUser } = await getUserProfile();
+                    if (currentUser) {
+                        const activationMessage = `GiftOnScreen Activation Request\nGift ID: ${giftId}\nUser Email: ${currentUser.email}\nTemplate: ${previewData.templateId}\nAmount: ₹59\nStatus: Pending payment`;
+
+                        await createActivationRequest({
+                            gift_id: giftId,
+                            user_id: currentUser.id,
+                            message: activationMessage
+                        });
+                    }
+                } catch (err) {
+                    console.error('Activation request error:', err);
+                }
+
+                // Show success
+                showSuccess(giftId);
+
+                // Clear preview data
+                localStorage.removeItem('previewData');
+
+            } catch (error) {
+                console.error('Error creating gift:', error);
+                showError(error.message || 'Failed to create gift. Please try again.');
+            }
+        }
+
+        function showSuccess(giftId) {
+            loadingState.classList.add('hidden');
+            successState.classList.remove('hidden');
+
+            // Update gift info
+            document.getElementById('gift-id').textContent = giftId;
+            document.getElementById('receiver-name').textContent = previewData.receiver;
+            document.getElementById('sender-name').textContent = previewData.sender;
+
+            // Update share link
+            const shareLink = `${GIFT_BASE_URL}/g/${giftId}`;
+            const shareInput = document.getElementById('share-link');
+            shareInput.value = shareLink;
+
+            // Copy button
+            document.getElementById('copy-btn').addEventListener('click', () => {
+                shareInput.select();
+                document.execCommand('copy');
+                const btn = document.getElementById('copy-btn');
+                btn.innerHTML = '<span>✅</span> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = '<span>📋</span> Copy Link';
+                }, 2000);
+            });
+
+            // WhatsApp button
+            document.getElementById('whatsapp-btn').addEventListener('click', async () => {
+                const { user: currentUser } = await getUserProfile();
+                const whatsappMessage = `GiftOnScreen Activation Request\n\nGift ID: ${giftId}\nUser Email: ${currentUser?.email || 'Unknown'}\nTemplate: ${previewData.templateId}\nAmount: ₹59\n\nPlease confirm payment to activate this gift.`;
+
+                const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
+                window.open(whatsappUrl, '_blank');
+            });
+
+            // Start countdown
+            let countdown = 30;
+            const timer = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        }
+
+        function showError(message) {
+            loadingState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+
+</html>
