@@ -78,6 +78,16 @@ const templates = [
         is_premium: false,
         is_active: true,
         github_path: 'templates/thankyou/index.html'
+    },
+    {
+        id: 'magic-balloon-adventure',
+        name: 'Magic Balloon Wish Adventure',
+        description: 'A viral-grade interactive experience! Tap balloons, build combos, trigger Fever Mode, and watch a magical surprise reveal. Highly addictive and share-worthy!',
+        thumbnail_url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop',
+        category: 'birthday',
+        is_premium: false,
+        is_active: true,
+        github_path: 'templates/magic-balloon-adventure/full.html'
     }
 ];
 
