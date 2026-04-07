@@ -107,6 +107,23 @@ VALUES (
     thumbnail_url = EXCLUDED.thumbnail_url,
     is_active = EXCLUDED.is_active;
 
+-- Template 7: Magic Balloon Wish Adventure (Viral Edition)
+INSERT INTO templates (id, name, description, thumbnail_url, category, is_premium, is_active, github_path)
+VALUES (
+    'magic-balloon-adventure',
+    'Magic Balloon Wish Adventure',
+    'A viral-grade interactive experience! Tap balloons, build combos, trigger Fever Mode, and watch a magical surprise reveal. Highly addictive and share-worthy!',
+    'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop',
+    'birthday',
+    false,
+    true,
+    'templates/magic-balloon-adventure/full.html'
+) ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    description = EXCLUDED.description,
+    thumbnail_url = EXCLUDED.thumbnail_url,
+    is_active = EXCLUDED.is_active;
+
 -- ============================================
 -- VERIFY INSERTED DATA
 -- ============================================

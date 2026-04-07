@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Magic Balloon Wish Adventure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        :root {
+            --primary-pink: #ff6b9d;
+            --primary-purple: #c44569;
+            --primary-blue: #574b90;
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --neon-purple: #bf00ff;
+            --gold: #ffd700;
+            --glow-pink: rgba(255, 107, 157, 0.6);
+            --glow-purple: rgba(196, 69, 105, 0.6);
+            --glow-blue: rgba(87, 75, 144, 0.6);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #0a0a1a;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* ========================================
+           VIEWPORT CONTAINER (9:16 Vertical)
+           ======================================== */
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg,
+                    #1a1a3e 0%,
+                    #2d1b69 25%,
+                    #4a148c 50%,
+                    #6a1b9a 75%,
+                    #8e24aa 100%);
+        }
+
+        @media (min-width: 451px) {
+            .game-container {
+                height: 800px;
+                margin-top: calc((100vh - 800px) / 2);
+                border-radius: 20px;
+                box-shadow: 0 0 60px rgba(255, 107, 157, 0.4);
+            }
+        }
+
+        /* ========================================
+           Z-LAYER SYSTEM
+           ======================================== */
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .layer-z1 {
+            z-index: 1;
+        }
+
+        /* Sky + light pulses */
+        .layer-z2 {
+            z-index: 2;
+        }
+
+        /* Clouds + sparkles */
+        .layer-z3 {
+            z-index: 3;
+            pointer-events: auto;
+        }
+
+        /* Balloons */
+        .layer-z4 {
+            z-index: 4;
+        }
+
+        /* UI */
+        .layer-z5 {
+            z-index: 5;
+        }
+
+        /* Text */
+        .layer-z6 {
+            z-index: 6;
+        }
+
+        /* FX */
+
+        /* ========================================
+           BACKGROUND EFFECTS (z1)
+           ======================================== */
+        .sky-gradient {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 40%, rgba(255, 107, 157, 0.3) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 30% 60%, rgba(0, 255, 255, 0.2) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 70% 70%, rgba(191, 0, 255, 0.2) 0%, transparent 60%);
+            animation: skyPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes skyPulse {
+
+            0%,
+            100% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+        .light-wave {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg,
+                    transparent 0deg,
+                    rgba(255, 107, 157, 0.1) 60deg,
+                    transparent 120deg,
+                    rgba(0, 255, 255, 0.1) 180deg,
+                    transparent 240deg,
+                    rgba(191, 0, 255, 0.1) 300deg,
+                    transparent 360deg);
+            animation: lightRotate 20s linear infinite;
+            top: -50%;
+            left: -50%;
+        }
+
+        @keyframes lightRotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ========================================
+           CLOUDS & SPARKLES (z2)
+           ======================================== */
+        .cloud {
+            position: absolute;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+
+        .cloud1 {
+            width: 200px;
+            height: 100px;
+            top: 10%;
+            left: -50px;
+            animation: floatCloud 25s infinite;
+        }
+
+        .cloud2 {
+            width: 150px;
+            height: 80px;
+            top: 30%;
+            right: -30px;
+            animation: floatCloud 30s infinite reverse;
+        }
+
+        .cloud3 {
+            width: 180px;
+            height: 90px;
+            top: 60%;
+            left: -40px;
+            animation: floatCloud 28s infinite;
+        }
+
+        @keyframes floatCloud {
+
+            0%,
+            100% {
+                transform: translateX(0) translateY(0);
+            }
+
+            25% {
+                transform: translateX(30px) translateY(-10px);
+            }
+
+            50% {
+                transform: translateX(60px) translateY(0);
+            }
+
+            75% {
+                transform: translateX(30px) translateY(10px);
+            }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white, 0 0 20px var(--neon-pink);
+            animation: sparkleFloat 10s infinite;
+        }
+
+        @keyframes sparkleFloat {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(90vh) scale(1);
+            }
+
+            90% {
+                opacity: 1;
+                transform: translateY(10vh) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(0) scale(0);
+            }
+        }
+
+        /* ========================================
+           BALLOONS (z3)
+           ======================================== */
+        .balloon {
+            position: absolute;
+            width: 60px;
+            height: 75px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        .balloon:active {
+            transform: scale(0.95);
+        }
+
+        .balloon-svg {
+            width: 100%;
+            height: 100%;
+            animation: balloonFloat 3s ease-in-out infinite;
+        }
+
+        .balloon.glow .balloon-svg {
+            filter: drop-shadow(0 0 20px var(--gold)) drop-shadow(0 0 40px var(--neon-pink));
+            animation: balloonFloat 3s ease-in-out infinite, glowPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes balloonFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-2deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(2deg);
+            }
+        }
+
+        @keyframes glowPulse {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 20px var(--gold)) drop-shadow(0 0 40px var(--neon-pink));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 30px var(--gold)) drop-shadow(0 0 60px var(--neon-pink)) drop-shadow(0 0 80px var(--neon-blue));
+            }
+        }
+
+        .balloon.popping {
+            animation: popBurst 0.3s ease-out forwards !important;
+        }
+
+        @keyframes popBurst {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Final merged balloon */
+        .final-balloon {
+            position: absolute;
+            width: 200px;
+            height: 250px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .final-balloon.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .final-balloon .balloon-svg {
+            filter: drop-shadow(0 0 40px var(--gold)) drop-shadow(0 0 80px var(--neon-pink));
+            animation: finalBalloonFloat 4s ease-in-out infinite, shineSweep 3s linear infinite;
+        }
+
+        @keyframes finalBalloonFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-3deg) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(3deg) scale(1.02);
+            }
+        }
+
+        @keyframes shineSweep {
+            0% {
+                filter: drop-shadow(0 0 40px var(--gold)) drop-shadow(0 0 80px var(--neon-pink)) brightness(1);
+            }
+
+            50% {
+                filter: drop-shadow(0 0 50px var(--gold)) drop-shadow(0 0 100px var(--neon-pink)) brightness(1.2);
+            }
+
+            100% {
+                filter: drop-shadow(0 0 40px var(--gold)) drop-shadow(0 0 80px var(--neon-pink)) brightness(1);
+            }
+        }
+
+        /* ========================================
+           UI ELEMENTS (z4)
+           ======================================== */
+        .ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .star-counter {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 24px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .star-icon {
+            font-size: 28px;
+            animation: starSpin 3s linear infinite;
+        }
+
+        @keyframes starSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .star-count {
+            font-family: 'Fredoka One', cursive;
+            font-size: 28px;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--gold);
+        }
+
+        .combo-meter {
+            position: absolute;
+            top: 14%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .combo-meter.active {
+            opacity: 1;
+        }
+
+        .combo-text {
+            font-family: 'Fredoka One', cursive;
+            font-size: 20px;
+            color: var(--neon-pink);
+            text-shadow: 0 0 20px var(--neon-pink);
+            animation: comboPulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes comboPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .combo-bar {
+            width: 150px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
+        }
+
+        .combo-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-pink), var(--gold));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease-out;
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        .fever-mode {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-family: 'Fredoka One', cursive;
+            font-size: 48px;
+            color: var(--gold);
+            text-shadow:
+                0 0 20px var(--gold),
+                0 0 40px var(--neon-pink),
+                0 0 60px var(--neon-purple);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .fever-mode.active {
+            animation: feverIn 0.5s ease-out forwards, feverShake 0.1s ease-in-out infinite;
+        }
+
+        @keyframes feverIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-10deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(5deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes feverShake {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(-52%, -50%) scale(1.02) rotate(-1deg);
+            }
+
+            75% {
+                transform: translate(-48%, -50%) scale(1.02) rotate(1deg);
+            }
+        }
+
+        /* ========================================
+           TEXT ELEMENTS (z5)
+           ======================================== */
+        .tap-hint {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Fredoka One', cursive;
+            font-size: 24px;
+            color: white;
+            text-shadow: 0 0 20px var(--neon-pink);
+            opacity: 0;
+            animation: hintPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes hintPulse {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.1);
+            }
+        }
+
+        .feedback-text {
+            position: absolute;
+            font-family: 'Fredoka One', cursive;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: feedbackFloat 1s ease-out forwards;
+            z-index: 50;
+        }
+
+        @keyframes feedbackFloat {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translateY(-20px) scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-80px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .name-reveal {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Fredoka One', cursive;
+            font-size: 42px;
+            color: white;
+            text-shadow:
+                0 0 20px var(--neon-pink),
+                0 0 40px var(--neon-purple),
+                0 0 60px var(--neon-blue);
+            opacity: 0;
+            white-space: nowrap;
+        }
+
+        .name-reveal.active {
+            animation: nameReveal 1s ease-out forwards;
+        }
+
+        @keyframes nameReveal {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0) rotate(-10deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.1) rotate(3deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1) rotate(0deg);
+            }
+        }
+
+        .name-letter {
+            display: inline-block;
+            opacity: 0;
+            animation: letterWave 0.5s ease-out forwards;
+        }
+
+        @keyframes letterWave {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-text {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Nunito', sans-serif;
+            font-size: 20px;
+            color: white;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.6;
+            opacity: 0;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .message-text.active {
+            animation: messageFade 1s ease-out 0.5s forwards;
+        }
+
+        @keyframes messageFade {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .sender-text {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            opacity: 0;
+        }
+
+        .sender-text.active {
+            animation: senderFade 1s ease-out 1s forwards;
+        }
+
+        @keyframes senderFade {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .made-for {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            opacity: 0;
+        }
+
+        .made-for.active {
+            animation: madeForFade 1s ease-out 1.5s forwards;
+        }
+
+        @keyframes madeForFade {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ========================================
+           FX LAYER (z6)
+           ======================================== */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+        }
+
+        .particle.star {
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: particleBurst 1s ease-out forwards;
+        }
+
+        .particle.sparkle-particle {
+            width: 8px;
+            height: 8px;
+            background: white;
+            box-shadow: 0 0 10px white, 0 0 20px var(--neon-pink);
+            animation: particleBurst 0.8s ease-out forwards;
+        }
+
+        @keyframes particleBurst {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .flash-overlay.active {
+            animation: flash 0.5s ease-out;
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Screen shake effect */
+        .shake {
+            animation: screenShake 0.3s ease-out;
+        }
+
+        @keyframes screenShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-5px);
+            }
+
+            40% {
+                transform: translateX(5px);
+            }
+
+            60% {
+                transform: translateX(-3px);
+            }
+
+            80% {
+                transform: translateX(3px);
+            }
+        }
+
+        /* ========================================
+           START SCREEN
+           ======================================== */
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .start-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 36px;
+            color: white;
+            text-align: center;
+            text-shadow: 0 0 30px var(--neon-pink);
+            margin-bottom: 20px;
+            animation: startPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes startPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 30px var(--neon-pink);
+            }
+
+            50% {
+                transform: scale(1.05);
+                text-shadow: 0 0 50px var(--neon-pink), 0 0 80px var(--neon-blue);
+            }
+        }
+
+        .start-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+        }
+
+        .tap-to-start {
+            font-family: 'Fredoka One', cursive;
+            font-size: 24px;
+            color: var(--gold);
+            animation: tapPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes tapPulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        .balloon-preview {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: previewFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes previewFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
+        }
+
+        /* ========================================
+           REPLAY BUTTON
+           ======================================== */
+        .replay-btn {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 40px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 20px;
+            color: white;
+            background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .replay-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.7);
+        }
+
+        .replay-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+            animation: replayAppear 0.5s ease-out;
+        }
+
+        @keyframes replayAppear {
+            from {
+                transform: translateX(-50%) scale(0);
+            }
+
+            to {
+                transform: translateX(-50%) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container" id="gameContainer">
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <div class="balloon-preview">🎈</div>
+            <h1 class="start-title">Magic Balloon<br>Wish Adventure</h1>
+            <p class="start-subtitle">A magical journey awaits...</p>
+            <p class="tap-to-start">TAP TO START ✨</p>
+        </div>
+
+        <!-- z1: Background -->
+        <div class="layer layer-z1">
+            <div class="sky-gradient"></div>
+            <div class="light-wave"></div>
+        </div>
+
+        <!-- z2: Clouds & Sparkles -->
+        <div class="layer layer-z2" id="cloudsLayer">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            <div class="cloud cloud3"></div>
+        </div>
+
+        <!-- z3: Balloons -->
+        <div class="layer layer-z3" id="balloonsLayer"></div>
+
+        <!-- z4: UI -->
+        <div class="layer layer-z4">
+            <div class="ui-container">
+                <div class="star-counter">
+                    <span class="star-icon">⭐</span>
+                    <span class="star-count" id="starCount">0</span>
+                </div>
+                <div class="combo-meter" id="comboMeter">
+                    <div class="combo-text" id="comboText">Combo x1</div>
+                    <div class="combo-bar">
+                        <div class="combo-fill" id="comboFill"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="fever-mode" id="feverMode">🔥 FEVER MODE 🔥</div>
+        </div>
+
+        <!-- z5: Text -->
+        <div class="layer layer-z5">
+            <div class="tap-hint" id="tapHint">Tap me 🎈</div>
+            <div class="name-reveal" id="nameReveal"></div>
+            <div class="message-text" id="messageText"></div>
+            <div class="sender-text" id="senderText"></div>
+            <div class="made-for" id="madeFor"></div>
+        </div>
+
+        <!-- z6: FX -->
+        <div class="layer layer-z6" id="fxLayer">
+            <div class="flash-overlay" id="flashOverlay"></div>
+        </div>
+
+        <!-- Replay Button -->
+        <button class="replay-btn" id="replayBtn">🔄 Play Again</button>
+    </div>
+
+    <script>
+        // ========================================
+        // GAME STATE & CONFIG
+        // ========================================
+        const GAME_CONFIG = {
+            totalStarsNeeded: 5,
+            comboTimeout: 1500,
+            feverDuration: 2000,
+            balloonSpawnInterval: 400,
+            sceneDuration: {
+                intro: 3000,
+                gameplay: 7000,
+                combo: 8000,
+                merge: 6000,
+                finale: 6000
+            }
+        };
+
+        let gameState = {
+            stars: 0,
+            combo: 1,
+            comboCount: 0,
+            isFever: false,
+            currentScene: 'intro',
+            isPlaying: false,
+            balloonId: 0,
+            comboTimer: null
+        };
+
+        // Gift data (injected by Worker)
+        const GIFT_DATA = { "receiver": "Friend", "sender": "Someone Special", "message": "Wishing you a magical day filled with joy!" };
+
+        // ========================================
+        // BALLOON SVG COLORS
+        // ========================================
+        const BALLOON_COLORS = [
+            { main: '#ff6b9d', light: '#ff9eb5', dark: '#c44569' },
+            { main: '#4facfe', light: '#8fd3f4', dark: '#2d7dd2' },
+            { main: '#a18cd1', light: '#fbc2eb', dark: '#7b68ee' },
+            { main: '#fa709a', light: '#fee140', dark: '#f093fb' },
+            { main: '#30cfd0', light: '#330867', dark: '#00d2ff' },
+            { main: '#f093fb', light: '#f5576c', dark: '#d76d77' }
+        ];
+
+        // ========================================
+        // DOM ELEMENTS
+        // ========================================
+        const elements = {
+            container: document.getElementById('gameContainer'),
+            startScreen: document.getElementById('startScreen'),
+            balloonsLayer: document.getElementById('balloonsLayer'),
+            cloudsLayer: document.getElementById('cloudsLayer'),
+            fxLayer: document.getElementById('fxLayer'),
+            starCount: document.getElementById('starCount'),
+            comboMeter: document.getElementById('comboMeter'),
+            comboText: document.getElementById('comboText'),
+            comboFill: document.getElementById('comboFill'),
+            feverMode: document.getElementById('feverMode'),
+            tapHint: document.getElementById('tapHint'),
+            nameReveal: document.getElementById('nameReveal'),
+            messageText: document.getElementById('messageText'),
+            senderText: document.getElementById('senderText'),
+            madeFor: document.getElementById('madeFor'),
+            flashOverlay: document.getElementById('flashOverlay'),
+            replayBtn: document.getElementById('replayBtn')
+        };
+
+        // ========================================
+        // UTILITIES
+        // ========================================
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function randomInt(min, max) {
+            return Math.floor(random(min, max));
+        }
+
+        function createSVGElement(type, attributes = {}) {
+            const el = document.createElementNS('http://www.w3.org/2000/svg', type);
+            Object.entries(attributes).forEach(([key, value]) => {
+                el.setAttribute(key, value);
+            });
+            return el;
+        }
+
+        // ========================================
+        // BALLOON CREATION
+        // ========================================
+        function createBalloonSVG(colors, isGlowing = false) {
+            const svg = createSVGElement('svg', {
+                viewBox: '0 0 100 130',
+                class: 'balloon-svg'
+            });
+
+            // Define gradients
+            const defs = createSVGElement('defs');
+
+            // Main gradient
+            const mainGrad = createSVGElement('radialGradient', {
+                id: `gradMain${gameState.balloonId}`,
+                cx: '30%', cy: '30%', r: '70%'
+            });
+            mainGrad.innerHTML = `
+                <stop offset="0%" stop-color="${colors.light}" />
+                <stop offset="50%" stop-color="${colors.main}" />
+                <stop offset="100%" stop-color="${colors.dark}" />
+            `;
+
+            // Highlight gradient
+            const highlightGrad = createSVGElement('linearGradient', {
+                id: `gradHighlight${gameState.balloonId}`,
+                x1: '0%', y1: '0%', x2: '100%', y2: '100%'
+            });
+            highlightGrad.innerHTML = `
+                <stop offset="0%" stop-color="rgba(255,255,255,0.8)" />
+                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+            `;
+
+            defs.appendChild(mainGrad);
+            defs.appendChild(highlightGrad);
+            svg.appendChild(defs);
+
+            // Balloon body
+            const body = createSVGElement('ellipse', {
+                cx: '50', cy: '55', rx: '40', ry: '50',
+                fill: `url(#gradMain${gameState.balloonId})`,
+                stroke: colors.dark, 'stroke-width': '1'
+            });
+
+            // Highlight
+            const highlight = createSVGElement('ellipse', {
+                cx: '35', cy: '40', rx: '15', ry: '20',
+                fill: `url(#gradHighlight${gameState.balloonId})`
+            });
+
+            // Knot
+            const knot = createSVGElement('polygon', {
+                points: '45,103 50,110 55,103',
+                fill: colors.dark
+            });
+
+            // String
+            const string = createSVGElement('path', {
+                d: 'M50,110 Q48,115 50,120 Q52,125 50,130',
+                fill: 'none', stroke: 'rgba(255,255,255,0.6)', 'stroke-width': '2'
+            });
+
+            svg.appendChild(body);
+            svg.appendChild(highlight);
+            svg.appendChild(knot);
+            svg.appendChild(string);
+
+            gameState.balloonId++;
+            return svg;
+        }
+
+        function createBalloon(x, y, isGlowing = false) {
+            const colors = BALLOON_COLORS[randomInt(0, BALLOON_COLORS.length)];
+            const balloon = document.createElement('div');
+            balloon.className = `balloon ${isGlowing ? 'glow' : ''}`;
+            balloon.style.left = x + 'px';
+            balloon.style.top = y + 'px';
+
+            const svg = createBalloonSVG(colors, isGlowing);
+            balloon.appendChild(svg);
+
+            // Add movement animation
+            const moveX = random(-30, 30);
+            const moveY = random(-50, -100);
+            const duration = random(4, 7);
+
+            balloon.style.animation = `float ${duration}s ease-in-out infinite`;
+
+            // Click handler
+            balloon.addEventListener('click', (e) => handleBalloonClick(e, balloon, colors));
+            balloon.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleBalloonClick(e, balloon, colors);
+            });
+
+            return balloon;
+        }
+
+        // ========================================
+        // INTERACTION HANDLERS
+        // ========================================
+        function handleBalloonClick(e, balloon, colors) {
+            if (!gameState.isPlaying || balloon.classList.contains('popping')) return;
+
+            const rect = balloon.getBoundingClientRect();
+            const containerRect = elements.container.getBoundingClientRect();
+            const x = rect.left - containerRect.left + rect.width / 2;
+            const y = rect.top - containerRect.top + rect.height / 2;
+
+            // Pop animation
+            balloon.classList.add('popping');
+
+            // Create particles
+            createParticles(x, y, colors.main);
+
+            // Add stars
+            const stars = gameState.isFever ? 2 : 1;
+            addStars(stars);
+
+            // Combo
+            incrementCombo();
+
+            // Feedback text
+            showFeedback(x, y, gameState.isFever ? '+2' : '+1', gameState.isFever ? '#ffd700' : '#fff');
+
+            // Screen micro-shake
+            elements.container.classList.add('shake');
+            setTimeout(() => elements.container.classList.remove('shake'), 300);
+
+            // Remove balloon after animation
+            setTimeout(() => {
+                balloon.remove();
+            }, 300);
+        }
+
+        function incrementCombo() {
+            gameState.comboCount++;
+
+            // Update combo multiplier
+            if (gameState.comboCount >= 5) gameState.combo = 5;
+            else if (gameState.comboCount >= 4) gameState.combo = 4;
+            else if (gameState.comboCount >= 3) gameState.combo = 3;
+            else if (gameState.comboCount >= 2) gameState.combo = 2;
+
+            // Show combo meter
+            elements.comboMeter.classList.add('active');
+            elements.comboText.textContent = `Combo x${gameState.combo}`;
+            elements.comboFill.style.width = Math.min(gameState.comboCount * 20, 100) + '%';
+
+            // Reset combo timer
+            clearTimeout(gameState.comboTimer);
+            gameState.comboTimer = setTimeout(() => {
+                gameState.combo = 1;
+                gameState.comboCount = 0;
+                elements.comboMeter.classList.remove('active');
+                elements.comboFill.style.width = '0%';
+            }, GAME_CONFIG.comboTimeout);
+
+            // Trigger fever mode at combo 5
+            if (gameState.comboCount === 5 && !gameState.isFever) {
+                triggerFeverMode();
+            }
+        }
+
+        function triggerFeverMode() {
+            gameState.isFever = true;
+            elements.feverMode.classList.add('active');
+
+            // Slow down time slightly
+            document.body.style.animation = 'none';
+
+            // Make all balloons glow
+            document.querySelectorAll('.balloon').forEach(b => b.classList.add('glow'));
+
+            // Gold particles burst
+            const rect = elements.container.getBoundingClientRect();
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    createParticles(
+                        random(rect.width * 0.2, rect.width * 0.8),
+                        random(rect.height * 0.3, rect.height * 0.7),
+                        '#ffd700'
+                    );
+                }, i * 50);
+            }
+
+            // End fever mode
+            setTimeout(() => {
+                gameState.isFever = false;
+                elements.feverMode.classList.remove('active');
+                document.querySelectorAll('.balloon').forEach(b => b.classList.remove('glow'));
+            }, GAME_CONFIG.feverDuration);
+        }
+
+        function addStars(amount) {
+            gameState.stars += amount * gameState.combo;
+            elements.starCount.textContent = gameState.stars;
+
+            // Star counter pulse
+            elements.starCount.parentElement.style.transform = 'translateX(-50%) scale(1.2)';
+            setTimeout(() => {
+                elements.starCount.parentElement.style.transform = 'translateX(-50%) scale(1)';
+            }, 150);
+        }
+
+        function showFeedback(x, y, text, color) {
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback-text';
+            feedback.textContent = text;
+            feedback.style.left = x + 'px';
+            feedback.style.top = y + 'px';
+            feedback.style.color = color;
+            feedback.style.textShadow = `0 0 20px ${color}`;
+            elements.fxLayer.appendChild(feedback);
+
+            setTimeout(() => feedback.remove(), 1000);
+        }
+
+        // ========================================
+        // PARTICLE SYSTEM
+        // ========================================
+        function createParticles(x, y, color) {
+            const particleCount = gameState.isFever ? 15 : 8;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const isStar = Math.random() > 0.5;
+                particle.className = `particle ${isStar ? 'star' : 'sparkle-particle'}`;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.background = isStar ? '#ffd700' : color;
+
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = random(50, 150);
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+
+                elements.fxLayer.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b9d', '#4facfe', '#a18cd1', '#fa709a', '#30cfd0', '#ffd700'];
+            const rect = elements.container.getBoundingClientRect();
+
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = random(0, rect.width) + 'px';
+                confetti.style.top = '-20px';
+                confetti.style.background = colors[randomInt(0, colors.length)];
+                confetti.style.animationDelay = random(0, 2) + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+
+                elements.fxLayer.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function createSparkles() {
+            const rect = elements.container.getBoundingClientRect();
+            for (let i = 0; i < 20; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = random(5, 95) + '%';
+                sparkle.style.animationDelay = random(0, 10) + 's';
+                sparkle.style.animationDuration = random(8, 15) + 's';
+                elements.cloudsLayer.appendChild(sparkle);
+            }
+        }
+
+        // ========================================
+        // SCENE MANAGEMENT
+        // ========================================
+        function startGame() {
+            elements.startScreen.style.display = 'none';
+            gameState.isPlaying = true;
+            gameState.stars = 0;
+            gameState.combo = 1;
+            gameState.comboCount = 0;
+            gameState.currentScene = 'intro';
+            gameState.isFever = false;
+
+            elements.starCount.textContent = '0';
+            elements.comboMeter.classList.remove('active');
+            elements.nameReveal.classList.remove('active');
+            elements.messageText.classList.remove('active');
+            elements.senderText.classList.remove('active');
+            elements.madeFor.classList.remove('active');
+            elements.replayBtn.classList.remove('active');
+            elements.balloonsLayer.innerHTML = '';
+            elements.fxLayer.innerHTML = '<div class="flash-overlay" id="flashOverlay"></div>';
+
+            createSparkles();
+            runSceneIntro();
+        }
+
+        // Scene 1: Hook Intro (0-3s)
+        function runSceneIntro() {
+            gameState.currentScene = 'intro';
+
+            // Spawn initial balloons
+            const rect = elements.container.getBoundingClientRect();
+            const positions = [
+                { x: rect.width * 0.2, y: rect.height * 0.3 },
+                { x: rect.width * 0.5, y: rect.height * 0.25, glow: true },
+                { x: rect.width * 0.8, y: rect.height * 0.35 },
+                { x: rect.width * 0.15, y: rect.height * 0.5 },
+                { x: rect.width * 0.85, y: rect.height * 0.45 }
+            ];
+
+            positions.forEach((pos, i) => {
+                setTimeout(() => {
+                    const balloon = createBalloon(pos.x - 30, pos.y, pos.glow);
+                    elements.balloonsLayer.appendChild(balloon);
+
+                    // Show hint on glowing balloon
+                    if (pos.glow) {
+                        setTimeout(() => {
+                            elements.tapHint.style.left = pos.x + 'px';
+                            elements.tapHint.style.top = (pos.y - 50) + 'px';
+                            elements.tapHint.style.opacity = '1';
+                        }, 500);
+                    }
+                }, i * 200);
+            });
+
+            // Camera zoom effect
+            elements.container.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                elements.container.style.transform = 'scale(1)';
+                elements.tapHint.style.opacity = '0';
+            }, 2000);
+
+            // Transition to gameplay
+            setTimeout(runSceneGameplay, GAME_CONFIG.sceneDuration.intro);
+        }
+
+        // Scene 2: Rapid Gameplay (3-10s)
+        function runSceneGameplay() {
+            gameState.currentScene = 'gameplay';
+
+            const rect = elements.container.getBoundingClientRect();
+            const spawnInterval = setInterval(() => {
+                if (!gameState.isPlaying || gameState.currentScene !== 'gameplay') {
+                    clearInterval(spawnInterval);
+                    return;
+                }
+
+                const x = random(40, rect.width - 100);
+                const y = rect.height + 50;
+                const balloon = createBalloon(x, y);
+
+                // Float up animation
+                balloon.style.transition = 'transform 8s linear';
+                elements.balloonsLayer.appendChild(balloon);
+
+                setTimeout(() => {
+                    balloon.style.transform = `translateY(-${rect.height + 200}px)`;
+                }, 50);
+
+                // Remove when off screen
+                setTimeout(() => {
+                    if (balloon.parentNode) balloon.remove();
+                }, 8000);
+
+            }, GAME_CONFIG.balloonSpawnInterval);
+
+            // Transition to combo phase
+            setTimeout(() => {
+                clearInterval(spawnInterval);
+                runSceneCombo();
+            }, GAME_CONFIG.sceneDuration.gameplay);
+        }
+
+        // Scene 3: Combo Mini-Game (10-18s)
+        function runSceneCombo() {
+            gameState.currentScene = 'combo';
+
+            const rect = elements.container.getBoundingClientRect();
+
+            // Spawn more balloons for combo building
+            const spawnInterval = setInterval(() => {
+                if (!gameState.isPlaying || gameState.currentScene !== 'combo') {
+                    clearInterval(spawnInterval);
+                    return;
+                }
+
+                for (let i = 0; i < 2; i++) {
+                    const x = random(40, rect.width - 100);
+                    const y = random(rect.height * 0.2, rect.height * 0.8);
+                    const balloon = createBalloon(x, y, Math.random() > 0.7);
+                    elements.balloonsLayer.appendChild(balloon);
+                }
+            }, 600);
+
+            setTimeout(() => {
+                clearInterval(spawnInterval);
+                runSceneMerge();
+            }, GAME_CONFIG.sceneDuration.combo);
+        }
+
+        // Scene 4: Surprise Merge Transformation (18-24s)
+        function runSceneMerge() {
+            gameState.currentScene = 'merge';
+
+            // Freeze all balloons
+            const balloons = document.querySelectorAll('.balloon');
+            balloons.forEach(b => {
+                b.style.animation = 'none';
+                b.style.transition = 'all 1s ease-out';
+            });
+
+            // Flash effect
+            elements.flashOverlay.classList.add('active');
+            setTimeout(() => elements.flashOverlay.classList.remove('active'), 500);
+
+            // Pull balloons to center with spiral motion
+            const rect = elements.container.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            balloons.forEach((balloon, i) => {
+                setTimeout(() => {
+                    balloon.style.left = centerX - 30 + 'px';
+                    balloon.style.top = centerY - 40 + 'px';
+                    balloon.style.opacity = '0';
+                }, i * 50);
+            });
+
+            // Remove balloons and show final balloon
+            setTimeout(() => {
+                elements.balloonsLayer.innerHTML = '';
+                showFinalBalloon();
+            }, 1000);
+        }
+
+        function showFinalBalloon() {
+            const rect = elements.container.getBoundingClientRect();
+
+            // Create giant balloon
+            const finalBalloon = document.createElement('div');
+            finalBalloon.className = 'final-balloon';
+
+            const colors = { main: '#ff6b9d', light: '#ff9eb5', dark: '#c44569' };
+            const svg = createBalloonSVG(colors);
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            finalBalloon.appendChild(svg);
+
+            elements.balloonsLayer.appendChild(finalBalloon);
+
+            // Animate in
+            setTimeout(() => finalBalloon.classList.add('active'), 100);
+
+            // Reveal name
+            setTimeout(() => {
+                revealName();
+            }, 1500);
+
+            // Pop final balloon and transition to finale
+            setTimeout(() => {
+                finalBalloon.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                finalBalloon.style.opacity = '0';
+
+                // Explosion particles
+                createParticles(rect.width / 2, rect.height / 2, '#ffd700');
+                createConfetti();
+
+                elements.flashOverlay.classList.add('active');
+                setTimeout(() => elements.flashOverlay.classList.remove('active'), 500);
+
+                runSceneFinale();
+            }, 4000);
+        }
+
+        function revealName() {
+            const name = GIFT_DATA?.receiver || 'Friend';
+            elements.nameReveal.innerHTML = name
+                .split('')
+                .map((letter, i) => `<span class="name-letter" style="animation-delay: ${i * 0.1}s">${letter}</span>`)
+                .join('');
+            elements.nameReveal.classList.add('active');
+        }
+
+        // Scene 5: Viral Celebration Finale (24-30s)
+        function runSceneFinale() {
+            gameState.currentScene = 'finale';
+
+            // Show message
+            elements.messageText.textContent = GIFT_DATA?.message || 'Wishing you a magical day filled with joy!';
+            elements.messageText.classList.add('active');
+
+            // Show sender
+            elements.senderText.innerHTML = `With love,<br><strong>${GIFT_DATA?.sender || 'Someone Special'}</strong>`;
+            elements.senderText.classList.add('active');
+
+            // Show "Made for" text
+            elements.madeFor.textContent = `Made for ${GIFT_DATA?.receiver || 'You'} 💖`;
+            elements.madeFor.classList.add('active');
+
+            // Continuous celebration effects
+            const celebrationInterval = setInterval(() => {
+                if (gameState.currentScene !== 'finale') {
+                    clearInterval(celebrationInterval);
+                    return;
+                }
+
+                const rect = elements.container.getBoundingClientRect();
+                createParticles(
+                    random(rect.width * 0.2, rect.width * 0.8),
+                    random(rect.height * 0.2, rect.height * 0.6),
+                    ['#ff6b9d', '#ffd700', '#4facfe'][randomInt(0, 3)]
+                );
+            }, 500);
+
+            // Spawn mini floating balloons
+            const balloonInterval = setInterval(() => {
+                if (gameState.currentScene !== 'finale') {
+                    clearInterval(balloonInterval);
+                    return;
+                }
+
+                const rect = elements.container.getBoundingClientRect();
+                const miniBalloon = createBalloon(random(20, rect.width - 60), rect.height + 40);
+                miniBalloon.style.transform = 'scale(0.5)';
+                miniBalloon.style.opacity = '0.6';
+                elements.balloonsLayer.appendChild(miniBalloon);
+
+                miniBalloon.style.transition = 'transform 10s linear, opacity 2s';
+                setTimeout(() => {
+                    miniBalloon.style.transform = `translateY(-${rect.height + 100}px) scale(0.5)`;
+                }, 100);
+
+                setTimeout(() => miniBalloon.remove(), 10000);
+            }, 1500);
+
+            // Show replay button
+            setTimeout(() => {
+                elements.replayBtn.classList.add('active');
+            }, 3000);
+        }
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        function init() {
+            elements.startScreen.addEventListener('click', startGame);
+            elements.startScreen.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startGame();
+            });
+
+            elements.replayBtn.addEventListener('click', startGame);
+        }
+
+        // Start
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
