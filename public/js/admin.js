@@ -250,8 +250,8 @@ function renderStats(stats) {
 }
 
 function renderFilters() {
-    // Get unique templates from all gifts
-    const templateIds = [...new Set(state.allGifts.map(g => g.template_id))];
+    // Use ALL templates from Supabase (not just ones with gifts)
+    const allTemplates = state.allTemplates || [];
 
     return `
         <div class="filters-bar">
@@ -268,9 +268,9 @@ function renderFilters() {
                 <label>Template:</label>
                 <select id="filterTemplate" class="filter-select">
                     <option value="all" ${state.filters.template === 'all' ? 'selected' : ''}>All Templates</option>
-                    ${templateIds.map(t => `
-                        <option value="${t}" ${state.filters.template === t ? 'selected' : ''}>
-                            ${getTemplateName(t)}
+                    ${allTemplates.map(t => `
+                        <option value="${t.id}" ${state.filters.template === t.id ? 'selected' : ''}>
+                            ${t.name}
                         </option>
                     `).join('')}
                 </select>
