@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome - GiftOnScreen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles/global.css">
     <style>
         * {
             margin: 0;
@@ -13,60 +19,163 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-            color: #fff;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             text-align: center;
             padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0F0F14 0%, #1a0a2e 50%, #0F0F14 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: -2;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .icon {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-main);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(255, 77, 141, 0.4);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         h1 {
-            font-size: 4rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
             margin-bottom: 1rem;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         p {
             font-size: 1.25rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 400px;
         }
 
         .btn {
             display: inline-block;
-            padding: 1rem 2rem;
-            background: #fff;
-            color: #6366f1;
+            padding: 1rem 2.5rem;
+            background: var(--gradient-main);
+            color: #fff;
             text-decoration: none;
-            border-radius: 50px;
+            border-radius: var(--radius-pill);
             font-weight: 600;
             font-size: 1.1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 20px rgba(255, 77, 141, 0.3);
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 77, 141, 0.4);
         }
 
-        .icon {
-            font-size: 5rem;
-            margin-bottom: 1rem;
+        .features {
+            display: flex;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .icon {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+
+            p {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="bg-gradient"></div>
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
+
     <div class="icon">🎁</div>
-    <h1>Welcome</h1>
-    <p>Create beautiful digital gifts for your loved ones</p>
-    <a href="./public/index.html" class="btn">Get Started</a>
+    <h1>GiftOnScreen</h1>
+    <p>Create beautiful digital gifts for your loved ones with personalized messages and memories</p>
+    <a href="./public/index.html" class="btn">Get Started ✨</a>
+
+    <div class="features">
+        <div class="feature">
+            <span>💝</span>
+            <span>Personalized Gifts</span>
+        </div>
+        <div class="feature">
+            <span>📸</span>
+            <span>Photo Memories</span>
+        </div>
+        <div class="feature">
+            <span>✨</span>
+            <span>Beautiful Templates</span>
+        </div>
+    </div>
+
+    <script type="module" src="./public/js/index.js"></script>
 </body>
 
 </html>

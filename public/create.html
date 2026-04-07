@@ -10,35 +10,21 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="../styles/global.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #ff4d8d;
-            --primary-soft: #ff85a2;
-            --primary-glow: rgba(255, 77, 141, 0.4);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.5);
-            --error: #fca5a5;
-            --success: #86efac;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a0a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #0d0d1a 100%);
+            background: var(--bg-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0F0F14 0%, #1a0a2e 50%, #0F0F14 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
-            min-height: 100vh;
-            color: var(--text-primary);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            z-index: -2;
         }
 
         @keyframes gradientShift {
@@ -52,49 +38,6 @@
 
             100% {
                 background-position: 0% 50%;
-            }
-        }
-
-        .ambient-glow {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .ambient-glow-1 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-            top: -100px;
-            right: -100px;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .ambient-glow-2 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, transparent 70%);
-            bottom: -50px;
-            left: -50px;
-            animation: float 25s ease-in-out infinite reverse;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            33% {
-                transform: translate(30px, -30px) scale(1.1);
-            }
-
-            66% {
-                transform: translate(-20px, 20px) scale(0.9);
             }
         }
 
@@ -113,12 +56,7 @@
         }
 
         .logo {
-            font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #fff 0%, var(--primary-soft) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         #logoutBtn {
@@ -126,7 +64,7 @@
             font-weight: 500;
             padding: 0.5rem 1rem;
             border: 1px solid var(--glass-border);
-            border-radius: 9999px;
+            border-radius: var(--radius-pill);
             background: var(--glass-bg);
             color: var(--text-primary);
             cursor: pointer;
@@ -135,7 +73,8 @@
         }
 
         #logoutBtn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--glass-border-hover);
         }
 
         main {
@@ -163,7 +102,7 @@
         }
 
         .step-indicator.active {
-            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-soft) 100%);
+            background: var(--gradient-main);
             box-shadow: 0 0 12px var(--primary-glow);
         }
 
@@ -187,7 +126,10 @@
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.15em;
-            color: var(--primary-soft);
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.75rem;
             display: block;
         }
@@ -200,6 +142,7 @@
             background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .step-subtitle {
@@ -212,10 +155,9 @@
         .glass-card {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
+            border-radius: var(--radius-lg);
             padding: 1.75rem;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
         }
 
         .form-group {
@@ -241,10 +183,10 @@
             padding: 1rem 1.25rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            border-radius: var(--radius-md);
             color: var(--text-primary);
             font-size: 0.9375rem;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             outline: none;
         }
@@ -256,8 +198,8 @@
 
         .form-input:focus,
         .form-textarea:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 77, 141, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--brand-pink);
             box-shadow: 0 0 0 4px rgba(255, 77, 141, 0.1);
         }
 
@@ -270,7 +212,7 @@
         /* Photo Upload */
         .photo-upload-area {
             border: 2px dashed var(--glass-border);
-            border-radius: 16px;
+            border-radius: var(--radius-md);
             padding: 2rem 1.5rem;
             text-align: center;
             cursor: pointer;
@@ -337,7 +279,7 @@
             right: -6px;
             width: 22px;
             height: 22px;
-            background: #ef4444;
+            background: var(--error);
             color: white;
             border: none;
             border-radius: 50%;
@@ -346,7 +288,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-sm);
             transition: transform 0.2s ease;
         }
 
@@ -374,7 +316,7 @@
         }
 
         #progressBar::-webkit-progress-value {
-            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-soft) 100%);
+            background: var(--gradient-main);
             border-radius: 2px;
             transition: width 0.3s ease;
         }
@@ -398,10 +340,10 @@
             flex: 1;
             padding: 1rem 1.5rem;
             border: none;
-            border-radius: 16px;
+            border-radius: var(--radius-pill);
             font-size: 0.9375rem;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -413,12 +355,12 @@
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--glass-border-hover);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+            background: var(--gradient-main);
             color: #fff;
             box-shadow: 0 4px 20px rgba(255, 77, 141, 0.3);
         }
@@ -442,7 +384,7 @@
         #message {
             margin-top: 1.25rem;
             padding: 1rem 1.25rem;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             font-size: 0.875rem;
             font-weight: 500;
             text-align: center;
@@ -454,33 +396,20 @@
         }
 
         .message-success {
-            background: rgba(134, 239, 172, 0.15);
-            border: 1px solid rgba(134, 239, 172, 0.3);
+            background: var(--success-light);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             color: var(--success);
         }
 
         .message-error {
-            background: rgba(252, 165, 165, 0.15);
-            border: 1px solid rgba(252, 165, 165, 0.3);
+            background: var(--error-light);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             color: var(--error);
         }
 
         /* Form (hidden) */
         #createGiftForm {
             display: none;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         @keyframes slideUp {
@@ -501,6 +430,7 @@
             *::before,
             *::after {
                 animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
             }
 
@@ -512,6 +442,7 @@
 </head>
 
 <body>
+    <div class="bg-gradient"></div>
     <div class="ambient-glow ambient-glow-1"></div>
     <div class="ambient-glow ambient-glow-2"></div>
 
@@ -653,7 +584,6 @@
 
         function submitForm() {
             syncFormFields();
-            // Use requestSubmit for proper form submission event
             document.getElementById('createGiftForm').requestSubmit();
         }
 

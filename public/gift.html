@@ -10,35 +10,23 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="../styles/global.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #ff4d8d;
-            --primary-soft: #ff85a2;
-            --primary-glow: rgba(255, 77, 141, 0.4);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.5);
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 25%, #16213e 50%, #1a0a2e 75%, #0d0d1a 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 20s ease infinite;
+            background: var(--bg-primary);
             min-height: 100vh;
-            color: var(--text-primary);
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
             opacity: 0;
             animation: fadeIn 1.5s ease forwards;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0F0F14 0%, #1a0a2e 50%, #0F0F14 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            z-index: -2;
         }
 
         @keyframes gradientShift {
@@ -140,47 +128,6 @@
             }
         }
 
-        /* Glow orbs */
-        .glow-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .glow-orb-1 {
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-            top: 10%;
-            left: -150px;
-            animation: pulse-glow 8s ease-in-out infinite;
-        }
-
-        .glow-orb-2 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.2) 0%, transparent 70%);
-            bottom: 10%;
-            right: -100px;
-            animation: pulse-glow 10s ease-in-out infinite reverse;
-        }
-
-        @keyframes pulse-glow {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.3;
-            }
-
-            50% {
-                transform: scale(1.2);
-                opacity: 0.5;
-            }
-        }
-
         /* Container */
         .gift-container {
             position: relative;
@@ -199,7 +146,7 @@
         .heart-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+            background: var(--gradient-main);
             border-radius: 24px;
             display: flex;
             align-items: center;
@@ -240,7 +187,10 @@
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.2em;
-            color: var(--primary-soft);
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 1rem;
             opacity: 0;
             animation: fadeInUp 0.8s ease 1s forwards;
@@ -264,7 +214,7 @@
         .divider {
             width: 60px;
             height: 1px;
-            background: linear-gradient(90deg, transparent, var(--primary-soft), transparent);
+            background: var(--gradient-main);
             margin-bottom: 1.5rem;
             opacity: 0;
             animation: fadeInUp 0.8s ease 1.6s forwards;
@@ -317,11 +267,11 @@
             padding: 1rem 2.5rem;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 9999px;
+            border-radius: var(--radius-pill);
             color: var(--text-primary);
             font-size: 0.9375rem;
             font-weight: 500;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             text-decoration: none;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -333,7 +283,7 @@
 
         .btn-create:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            border-color: var(--glass-border-hover);
             transform: translateY(-2px);
         }
 
@@ -355,8 +305,12 @@
         }
 
         .gift-footer a {
-            color: var(--primary-soft);
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             text-decoration: none;
+            font-weight: 500;
         }
 
         /* Loading State */
@@ -371,7 +325,7 @@
         .loading-heart {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+            background: var(--gradient-main);
             border-radius: 16px;
             display: flex;
             align-items: center;
@@ -431,34 +385,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Reduced motion */
-        @media (prefers-reduced-motion: reduce) {
-
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
-
-            body {
-                animation: fadeIn 0.5s ease forwards;
-            }
-        }
-
         /* Mobile */
         @media (max-width: 480px) {
             .receiver-name {
@@ -469,10 +395,27 @@
                 font-size: 1.125rem;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            body {
+                animation: fadeIn 0.5s ease forwards;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="bg-gradient"></div>
+
     <!-- Ambient Effects -->
     <div class="particles">
         <div class="particle"></div>
@@ -484,8 +427,8 @@
         <div class="particle"></div>
         <div class="particle"></div>
     </div>
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
 
     <!-- Gift Content -->
     <div class="gift-container" id="giftContent">
@@ -521,7 +464,6 @@
                     return;
                 }
 
-                // Render the gift with cinematic reveal
                 renderGift(gift);
             } catch (err) {
                 console.error('Error loading gift:', err);

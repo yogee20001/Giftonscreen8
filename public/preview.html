@@ -10,35 +10,21 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="../styles/global.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #ff4d8d;
-            --primary-soft: #ff85a2;
-            --primary-glow: rgba(255, 77, 141, 0.4);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.5);
-            --success: #86efac;
-            --warning: #fde047;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a0a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #0d0d1a 100%);
+            background: var(--bg-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0F0F14 0%, #1a0a2e 50%, #0F0F14 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
-            min-height: 100vh;
-            color: var(--text-primary);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            z-index: -2;
         }
 
         @keyframes gradientShift {
@@ -52,49 +38,6 @@
 
             100% {
                 background-position: 0% 50%;
-            }
-        }
-
-        .ambient-glow {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .ambient-glow-1 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-            top: -100px;
-            right: -100px;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .ambient-glow-2 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, transparent 70%);
-            bottom: -50px;
-            left: -50px;
-            animation: float 25s ease-in-out infinite reverse;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            33% {
-                transform: translate(30px, -30px) scale(1.1);
-            }
-
-            66% {
-                transform: translate(-20px, 20px) scale(0.9);
             }
         }
 
@@ -113,12 +56,7 @@
         }
 
         .logo {
-            font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #fff 0%, var(--primary-soft) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .header-actions {
@@ -131,7 +69,7 @@
             font-weight: 500;
             padding: 0.5rem 1rem;
             border: 1px solid var(--glass-border);
-            border-radius: 9999px;
+            border-radius: var(--radius-pill);
             background: var(--glass-bg);
             color: var(--text-primary);
             text-decoration: none;
@@ -141,7 +79,8 @@
         }
 
         .btn-header:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--glass-border-hover);
         }
 
         main {
@@ -166,6 +105,7 @@
             background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .page-subtitle {
@@ -178,11 +118,10 @@
         .gift-summary {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: var(--radius-lg);
             padding: 1.25rem;
             margin-bottom: 1.25rem;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
             opacity: 0;
         }
@@ -220,11 +159,10 @@
         #preview-frame-container {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: var(--radius-lg);
             overflow: hidden;
             margin-bottom: 1.25rem;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
             opacity: 0;
         }
@@ -240,11 +178,10 @@
         .action-section {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
             text-align: center;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
             opacity: 0;
         }
@@ -258,13 +195,13 @@
         .btn-primary {
             width: 100%;
             padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+            background: var(--gradient-main);
             border: none;
-            border-radius: 16px;
+            border-radius: var(--radius-pill);
             color: #fff;
             font-size: 0.9375rem;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 4px 20px rgba(255, 77, 141, 0.3);
@@ -287,9 +224,9 @@
 
         /* Admin Notified Banner */
         #admin-notified-banner {
-            background: rgba(134, 239, 172, 0.15);
-            border: 1px solid rgba(134, 239, 172, 0.3);
-            border-radius: 16px;
+            background: var(--success-light);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-md);
             padding: 1.25rem;
             margin-bottom: 1.25rem;
             text-align: center;
@@ -310,12 +247,11 @@
         #activation-section {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
             text-align: center;
             margin-top: 1.25rem;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -339,11 +275,11 @@
             padding: 1rem 1.5rem;
             background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
             border: none;
-            border-radius: 16px;
+            border-radius: var(--radius-pill);
             color: #fff;
             font-size: 0.9375rem;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
@@ -383,28 +319,9 @@
             height: 40px;
             margin: 0 auto 1rem;
             border: 2px solid var(--glass-border);
-            border-top-color: var(--primary);
+            border-top-color: var(--brand-pink);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -413,6 +330,7 @@
             *::before,
             *::after {
                 animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
             }
 
@@ -424,6 +342,7 @@
 </head>
 
 <body>
+    <div class="bg-gradient"></div>
     <div class="ambient-glow ambient-glow-1"></div>
     <div class="ambient-glow ambient-glow-2"></div>
 
@@ -473,9 +392,9 @@
 
             <!-- Gift Link Display -->
             <div class="gift-link-box" style="
-                background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-                border: 2px dashed var(--primary);
-                border-radius: 12px;
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 77, 141, 0.1) 100%);
+                border: 2px dashed var(--brand-pink);
+                border-radius: var(--radius-md);
                 padding: 1rem;
                 margin-bottom: 1.25rem;
                 text-align: left;
@@ -488,7 +407,7 @@
                         flex: 1;
                         padding: 0.75rem;
                         border: 1px solid var(--glass-border);
-                        border-radius: 8px;
+                        border-radius: var(--radius-sm);
                         background: rgba(0,0,0,0.2);
                         color: var(--text-primary);
                         font-family: monospace;
