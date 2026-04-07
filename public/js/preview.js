@@ -3,6 +3,9 @@
 
 import { getUser, logout } from '../../core/auth.js';
 
+// Worker URL for gift rendering
+const WORKER_URL = 'https://giftonscreen8-worker.giftonscreen.workers.dev';
+
 // Check auth and update UI
 async function checkAuth() {
     const { user } = await getUser();
@@ -196,8 +199,8 @@ Status: Pending payment`;
     giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
     giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation</span></p>`;
 
-    // Populate gift link
-    const giftLink = `${window.location.origin}/g/${giftId}`;
+    // Populate gift link using Worker URL
+    const giftLink = `${WORKER_URL}/g/${giftId}`;
     const giftLinkInput = document.getElementById('gift-link-input');
     giftLinkInput.value = giftLink;
 
