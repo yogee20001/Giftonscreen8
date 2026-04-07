@@ -24,6 +24,8 @@ function showSuccess() {
 function getRedirectUrl() {
     const redirect = sessionStorage.getItem('redirectAfterLogin');
     const template = sessionStorage.getItem('selectedTemplate');
+    const autoCreate = sessionStorage.getItem('autoCreateGift');
+
     sessionStorage.removeItem('redirectAfterLogin');
     sessionStorage.removeItem('selectedTemplate');
 
@@ -31,6 +33,10 @@ function getRedirectUrl() {
         return `/public/create.html?template=${template}`;
     }
     if (redirect === 'preview') {
+        return '/public/preview.html';
+    }
+    if (redirect === 'success') {
+        // Keep autoCreate flag for success page flow
         return '/public/preview.html';
     }
     return '/public/index.html';
