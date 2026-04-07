@@ -1,6 +1,8 @@
 // Cloudflare Worker - Secure Gift Rendering
 // Handles /g/:giftId routes
 
+const PAGES_URL = 'https://giftonscreen8.pages.dev';
+
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
@@ -12,10 +14,12 @@ export default {
                 status: 'ok',
                 hasSupabaseUrl: !!env.SUPABASE_URL,
                 hasSupabaseKey: !!env.SUPABASE_SERVICE_KEY,
-                hasGithubToken: !!env.GITHUB_TOKEN,
-                hasGithubRepo: !!env.GITHUB_REPO
+                pagesUrl: PAGES_URL
             }), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
             });
         }
 
@@ -49,8 +53,8 @@ export default {
                 return renderInactive();
             }
 
-            // Fetch template from GitHub
-            const templateHtml = await fetchTemplate(gift.template_id, env);
+            // Fetch template from Pages
+            const templateHtml = await fetchTemplate(gift.template_id);
 
             if (!templateHtml) {
                 return renderError('Template not found', 500);
@@ -61,7 +65,8 @@ export default {
             return new Response(html, {
                 headers: {
                     'Content-Type': 'text/html',
-                    'Cache-Control': 'no-store'
+                    'Cache-Control': 'no-store',
+                    'Access-Control-Allow-Origin': '*'
                 }
             });
 
@@ -107,62 +112,20 @@ function isExpired(expiresAt) {
 }
 
 /**
- * Fetch template from private GitHub repo
+ * Fetch template from Cloudflare Pages
  */
-async function fetchTemplate(templateId, env) {
-    const { GITHUB_TOKEN, GITHUB_REPO } = env;
+async function fetchTemplate(templateId) {
+    // Construct Pages URL - templates are in /templates/{templateId}/full.html
+    const url = `${PAGES_URL}/templates/${templateId}/full.html`;
 
-    // First, get template info from Supabase
-    const templateInfo = await fetchTemplateInfo(templateId, env);
-
-    if (!templateInfo || !templateInfo.github_path) {
-        return null;
-    }
-
-    // Construct GitHub raw URL
-    const githubPath = templateInfo.github_path.replace(/\.js$/, '.html');
-    const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${githubPath}`;
-
-    const response = await fetch(url, {
-        headers: {
-            'Authorization': `Bearer ${GITHUB_TOKEN}`,
-            'User-Agent': 'GiftOnScreen-Worker',
-            'Accept': 'application/vnd.github.v3.raw'
-        }
-    });
+    const response = await fetch(url);
 
     if (!response.ok) {
-        console.error(`GitHub fetch failed: ${response.status}`);
+        console.error(`Template fetch failed: ${response.status} for ${url}`);
         return null;
     }
 
     return await response.text();
-}
-
-/**
- * Fetch template metadata from Supabase
- */
-async function fetchTemplateInfo(templateId, env) {
-    const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
-
-    const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/templates?id=eq.${templateId}`,
-        {
-            method: 'GET',
-            headers: {
-                'apikey': SUPABASE_SERVICE_KEY,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    );
-
-    if (!response.ok) {
-        return null;
-    }
-
-    const data = await response.json();
-    return data && data.length > 0 ? data[0] : null;
 }
 
 /**
@@ -228,7 +191,10 @@ function renderInactive() {
 </html>`;
 
     return new Response(html, {
-        headers: { 'Content-Type': 'text/html' }
+        headers: {
+            'Content-Type': 'text/html',
+            'Access-Control-Allow-Origin': '*'
+        }
     });
 }
 
@@ -269,7 +235,10 @@ function renderExpired() {
 </html>`;
 
     return new Response(html, {
-        headers: { 'Content-Type': 'text/html' }
+        headers: {
+            'Content-Type': 'text/html',
+            'Access-Control-Allow-Origin': '*'
+        }
     });
 }
 
@@ -311,6 +280,9 @@ function renderError(message, status) {
 
     return new Response(html, {
         status,
-        headers: { 'Content-Type': 'text/html' }
+        headers: {
+            'Content-Type': 'text/html',
+            'Access-Control-Allow-Origin': '*'
+        }
     });
 }
