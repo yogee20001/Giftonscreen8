@@ -416,7 +416,7 @@
     </div>
 
     <script type="module">
-        import { getUser, getUserProfile } from '../core/auth.js';
+        import { getUser } from '../core/auth.js';
         import { getGift } from '../core/api.js';
 
         const GIFT_BASE_URL = 'https://giftonscreen.shop';
@@ -509,7 +509,7 @@
 
             // WhatsApp button
             document.getElementById('whatsapp-btn').addEventListener('click', async () => {
-                const { user: currentUser } = await getUserProfile();
+                const { user: currentUser } = await getUser();
                 const templateId = previewData?.templateId || 'default';
                 const whatsappMessage = `GiftOnScreen Activation Request\n\nGift ID: ${gift.id}\nUser Email: ${currentUser?.email || 'Unknown'}\nTemplate: ${templateId}\nAmount: ₹59\n\nPlease confirm payment to activate this gift.`;
 
