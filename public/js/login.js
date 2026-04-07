@@ -1,6 +1,7 @@
 // Login Page Logic
 // Handles magic link and Google authentication
 
+import { initUserMenu } from './user-menu.js';
 import { login, signInWithGoogle } from '../../core/auth.js';
 import { isValidEmail } from '../../core/utils.js';
 
@@ -89,3 +90,6 @@ loginForm.addEventListener('submit', async (e) => {
     showMessage('Magic link sent! Check your email to log in.');
     loginForm.reset();
 });
+
+// Initialize user menu
+initUserMenu();

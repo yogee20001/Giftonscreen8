@@ -1,42 +1,10 @@
 // Homepage Logic
 // Fetches and displays template feed - accessible to all users
 
-import { getUser } from '../../core/auth.js';
 import { getTemplates } from '../../core/api.js';
+import { initUserMenu } from './user-menu.js';
 
 const templateList = document.getElementById('template-list');
-const logoutBtn = document.getElementById('logoutBtn');
-
-// Check auth status and update UI
-let currentUser = null;
-
-async function checkAuth() {
-    const { user } = await getUser();
-    currentUser = user;
-    updateAuthUI();
-}
-
-function updateAuthUI() {
-    if (logoutBtn) {
-        if (currentUser) {
-            logoutBtn.textContent = 'Logout';
-            logoutBtn.onclick = handleLogout;
-        } else {
-            logoutBtn.textContent = 'Login';
-            logoutBtn.onclick = () => {
-                window.location.href = '/public/login.html';
-            };
-        }
-    }
-}
-
-async function handleLogout() {
-    const { logout } = await import('../../core/auth.js');
-    const { error } = await logout();
-    if (!error) {
-        window.location.reload();
-    }
-}
 
 function renderTemplates(templates) {
     if (!templates || templates.length === 0) {
@@ -85,5 +53,5 @@ async function loadTemplates() {
 }
 
 // Initialize
-await checkAuth();
+await initUserMenu();
 await loadTemplates();

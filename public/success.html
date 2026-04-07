@@ -328,6 +328,12 @@
     <div class="ambient-glow ambient-glow-1"></div>
     <div class="ambient-glow ambient-glow-2"></div>
 
+    <header
+        style="position: relative; z-index: 10; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; max-width: 480px; margin: 0 auto;">
+        <a href="./index.html" class="logo" style="text-decoration: none;">GiftOnScreen</a>
+        <div id="userMenuContainer"></div>
+    </header>
+
     <!-- Loading State -->
     <div id="loading-state" class="success-card">
         <div class="loading-state">
@@ -418,6 +424,7 @@
     <script type="module">
         import { getUser } from '../core/auth.js';
         import { getGift } from '../core/api.js';
+        import { initUserMenu } from './js/user-menu.js';
 
         const GIFT_BASE_URL = 'https://giftonscreen.shop';
         const ADMIN_WHATSAPP = '919999999999';
@@ -437,6 +444,9 @@
 
         // Initialize
         async function init() {
+            // Initialize user menu
+            await initUserMenu();
+
             // Check if giftId is in URL
             if (!giftId) {
                 showError('No gift ID found. Please create a gift first.');

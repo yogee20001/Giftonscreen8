@@ -208,6 +208,12 @@
     <div class="ambient-glow ambient-glow-1"></div>
     <div class="ambient-glow ambient-glow-2"></div>
 
+    <header
+        style="position: relative; z-index: 10; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+        <a href="./index.html" class="logo" style="text-decoration: none;">GiftOnScreen</a>
+        <div id="userMenuContainer"></div>
+    </header>
+
     <div class="container">
         <h1>🎁 GiftOnScreen</h1>
         <p class="subtitle">Access All Pages - Link Tester</p>
@@ -377,6 +383,10 @@
 
         // Auto-check on load
         setTimeout(checkAllLinks, 500);
+    </script>
+    <script type="module">
+        import { initUserMenu } from './js/user-menu.js';
+        initUserMenu();
     </script>
 </body>
 

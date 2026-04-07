@@ -1,36 +1,10 @@
 // Create Gift Page Logic
 // Handles gift creation with template selection and image uploads
 
-import { logout, getUser } from '../../core/auth.js';
+import { getUser } from '../../core/auth.js';
 import { getTemplates } from '../../core/api.js';
 import { uploadMultipleImages } from '../../core/cloudinary.js';
-
-// Check auth and update UI
-async function checkAuth() {
-    const { user } = await getUser();
-    updateAuthUI(user);
-}
-
-function updateAuthUI(user) {
-    if (logoutBtn) {
-        if (user) {
-            logoutBtn.textContent = 'Logout';
-            logoutBtn.onclick = handleLogout;
-        } else {
-            logoutBtn.textContent = 'Login';
-            logoutBtn.onclick = () => {
-                window.location.href = '/public/login.html';
-            };
-        }
-    }
-}
-
-async function handleLogout() {
-    const { error } = await logout();
-    if (!error) {
-        window.location.reload();
-    }
-}
+import { initUserMenu } from './user-menu.js';
 
 // Get template ID from URL
 const params = new URLSearchParams(window.location.search);
@@ -51,7 +25,6 @@ if (templateError || !templates?.find(t => t.id === templateId)) {
 
 const createGiftForm = document.getElementById('createGiftForm');
 const messageDiv = document.getElementById('message');
-const logoutBtn = document.getElementById('logoutBtn');
 const photosInput = document.getElementById('photos');
 const photoPreview = document.getElementById('photoPreview');
 const uploadProgress = document.getElementById('uploadProgress');
@@ -185,5 +158,5 @@ createGiftForm.addEventListener('submit', async (e) => {
     window.location.href = '/public/preview.html';
 });
 
-// Initialize auth check
-checkAuth();
+// Initialize user menu
+initUserMenu();

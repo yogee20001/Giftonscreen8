@@ -1,37 +1,11 @@
 // Preview Page Logic
 // Renders gift preview in iframe using localStorage data
 
-import { getUser, logout } from '../../core/auth.js';
+import { initUserMenu } from './user-menu.js';
+import { getUser } from '../../core/auth.js';
 
 // Use custom domain for gift links
 const GIFT_BASE_URL = 'https://giftonscreen.shop';
-
-// Check auth and update UI
-async function checkAuth() {
-    const { user } = await getUser();
-    updateAuthUI(user);
-}
-
-function updateAuthUI(user) {
-    if (logoutBtn) {
-        if (user) {
-            logoutBtn.textContent = 'Logout';
-            logoutBtn.onclick = handleLogout;
-        } else {
-            logoutBtn.textContent = 'Login';
-            logoutBtn.onclick = () => {
-                window.location.href = '/public/login.html';
-            };
-        }
-    }
-}
-
-async function handleLogout() {
-    const { error } = await logout();
-    if (!error) {
-        window.location.reload();
-    }
-}
 
 // Load preview data from localStorage
 const data = JSON.parse(localStorage.getItem('previewData'));
@@ -44,7 +18,6 @@ if (!data || !data.templateId) {
 
 const container = document.getElementById('preview-frame-container');
 const continueBtn = document.getElementById('continue-btn');
-const logoutBtn = document.getElementById('logoutBtn');
 const giftData = document.getElementById('gift-data');
 
 // Display gift data summary
@@ -271,8 +244,8 @@ Please confirm payment to activate this gift.`;
     }
 });
 
-// Initialize auth check
-checkAuth();
+// Initialize user menu
+initUserMenu();
 
 // Check if we need to auto-create gift after login
 checkAutoCreate();
