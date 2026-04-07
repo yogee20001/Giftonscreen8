@@ -125,21 +125,9 @@ doc.body.appendChild(script);
 
 let giftId = null;
 
-// Continue button - create actual gift in database and redirect to success page
-continueBtn.addEventListener('click', async () => {
+// Function to create gift and redirect to success
+async function createGiftAndRedirect() {
     continueBtn.disabled = true;
-    continueBtn.textContent = 'Checking login...';
-
-    // Check if user is logged in first
-    const { user: currentUser } = await getUser();
-
-    if (!currentUser) {
-        // User not logged in - save current state and redirect to login
-        sessionStorage.setItem('redirectAfterLogin', 'preview');
-        window.location.href = `/public/login.html?redirect=preview`;
-        return;
-    }
-
     continueBtn.textContent = 'Creating gift...';
 
     // Import API functions
@@ -188,9 +176,45 @@ Status: Pending payment`;
         console.error('❌ Error creating activation request:', err);
     }
 
+    // Clear auto-create flag
+    sessionStorage.removeItem('autoCreateGift');
+
     // Step 3: Redirect to success page
     window.location.href = `/public/success.html?giftId=${giftId}`;
+}
+
+// Continue button - create actual gift in database and redirect to success page
+continueBtn.addEventListener('click', async () => {
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Checking login...';
+
+    // Check if user is logged in first
+    const { user: currentUser } = await getUser();
+
+    if (!currentUser) {
+        // User not logged in - save state and redirect to login
+        sessionStorage.setItem('redirectAfterLogin', 'preview');
+        sessionStorage.setItem('autoCreateGift', 'true');
+        window.location.href = `/public/login.html?redirect=preview`;
+        return;
+    }
+
+    // User is logged in, proceed with gift creation
+    await createGiftAndRedirect();
 });
+
+// Check for auto-create after login (when returning from callback)
+async function checkAutoCreate() {
+    const autoCreate = sessionStorage.getItem('autoCreateGift');
+    if (autoCreate === 'true') {
+        // Check if user is now logged in
+        const { user: currentUser } = await getUser();
+        if (currentUser) {
+            console.log('🎁 Auto-creating gift after login...');
+            await createGiftAndRedirect();
+        }
+    }
+}
 
 // Activate on WhatsApp button
 const activateBtn = document.getElementById('activate-btn');
@@ -249,3 +273,6 @@ Please confirm payment to activate this gift.`;
 
 // Initialize auth check
 checkAuth();
+
+// Check if we need to auto-create gift after login
+checkAutoCreate();
