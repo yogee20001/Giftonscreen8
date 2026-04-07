@@ -1,5 +1,5 @@
-// Admin Panel Logic - Redesigned with Category-wise Gift Management
-// Manages all gifts with easy activate/deactivate controls
+// Admin Panel Logic - Redesigned with Perfect Filtering
+// Category-wise gift management with strong backend integration
 
 import { requireAuth, logout } from '../../core/auth.js';
 import {
@@ -12,49 +12,73 @@ import {
 } from '../../core/api.js';
 import { formatDate } from '../../core/utils.js';
 
-// State
-let allGifts = [];
-let allTemplates = [];
-let activationRequests = [];
-let currentView = 'gifts';
-let filteredGifts = [];
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+const state = {
+    allGifts: [],
+    allTemplates: [],
+    activationRequests: [],
+    currentView: 'gifts', // gifts, pending, active, inactive, requests
+    filters: {
+        status: 'all',
+        template: 'all',
+        search: ''
+    },
+    isLoading: false
+};
 
-// Auth guard
+// ============================================
+// AUTHENTICATION
+// ============================================
 const user = await requireAuth('/public/admin-login.html');
 if (!user) {
     throw new Error('Authentication required');
 }
 
-// Check admin access
 const { isAdmin, error: adminError } = await checkIsAdmin();
 if (adminError || !isAdmin) {
     renderAccessDenied();
     throw new Error('Access denied - not an admin');
 }
 
-// DOM Elements
-const mainContent = document.getElementById('mainContent');
-const refreshBtn = document.getElementById('refreshBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const toast = document.getElementById('toast');
-const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+// ============================================
+// DOM ELEMENTS
+// ============================================
+const elements = {
+    mainContent: document.getElementById('mainContent'),
+    refreshBtn: document.getElementById('refreshBtn'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    toast: document.getElementById('toast'),
+    sidebarLinks: document.querySelectorAll('.sidebar-nav a')
+};
 
-// Initialize
-await loadDashboard();
+// ============================================
+// INITIALIZATION
+// ============================================
+async function init() {
+    setupEventListeners();
+    await loadDashboard();
+}
 
-// Event Listeners
-refreshBtn?.addEventListener('click', loadDashboard);
-logoutBtn?.addEventListener('click', handleLogout);
+function setupEventListeners() {
+    // Refresh and logout
+    elements.refreshBtn?.addEventListener('click', loadDashboard);
+    elements.logoutBtn?.addEventListener('click', handleLogout);
 
-sidebarLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const view = link.dataset.view;
-        setActiveView(view);
-        sidebarLinks.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
+    // Sidebar navigation
+    elements.sidebarLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = link.dataset.view;
+            switchView(view);
+
+            // Update active state in sidebar
+            elements.sidebarLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+        });
     });
-});
+}
 
 async function handleLogout() {
     const { error } = await logout();
@@ -63,13 +87,12 @@ async function handleLogout() {
     }
 }
 
-function setActiveView(view) {
-    currentView = view;
-    renderDashboard();
-}
-
+// ============================================
+// DATA LOADING
+// ============================================
 async function loadDashboard() {
     showLoading();
+    state.isLoading = true;
 
     try {
         // Load all data in parallel
@@ -82,48 +105,121 @@ async function loadDashboard() {
         if (giftsResult.error) throw giftsResult.error;
         if (templatesResult.error) throw templatesResult.error;
 
-        allGifts = giftsResult.gifts || [];
-        allTemplates = templatesResult.templates || [];
-        activationRequests = requestsResult.requests || [];
+        state.allGifts = giftsResult.gifts || [];
+        state.allTemplates = templatesResult.templates || [];
+        state.activationRequests = requestsResult.requests || [];
 
         renderDashboard();
     } catch (error) {
         console.error('Error loading dashboard:', error);
         showError('Failed to load dashboard: ' + error.message);
+    } finally {
+        state.isLoading = false;
     }
 }
 
-function showLoading() {
-    mainContent.innerHTML = `
-        <div class="loading-container">
-            <div class="spinner"></div>
-            <p>Loading dashboard...</p>
-        </div>
-    `;
+// ============================================
+// VIEW MANAGEMENT
+// ============================================
+function switchView(view) {
+    state.currentView = view;
+
+    // Reset filters when switching views (except for requests view)
+    if (view !== 'requests') {
+        state.filters.status = 'all';
+        state.filters.template = 'all';
+        state.filters.search = '';
+    }
+
+    renderDashboard();
 }
 
+// ============================================
+// FILTERING LOGIC
+// ============================================
+function getFilteredGifts() {
+    let gifts = [...state.allGifts];
+
+    // STEP 1: Filter by VIEW (sidebar selection)
+    if (state.currentView === 'pending') {
+        gifts = gifts.filter(g => g.status === 'pending');
+    } else if (state.currentView === 'active') {
+        gifts = gifts.filter(g => g.status === 'active');
+    } else if (state.currentView === 'inactive') {
+        gifts = gifts.filter(g => g.status === 'inactive');
+    }
+    // 'gifts' view shows all (no filter)
+
+    // STEP 2: Filter by STATUS dropdown (only if not already filtered by view)
+    if (state.filters.status !== 'all') {
+        gifts = gifts.filter(g => g.status === state.filters.status);
+    }
+
+    // STEP 3: Filter by TEMPLATE
+    if (state.filters.template !== 'all') {
+        gifts = gifts.filter(g => g.template_id === state.filters.template);
+    }
+
+    // STEP 4: Filter by SEARCH
+    if (state.filters.search.trim()) {
+        const query = state.filters.search.toLowerCase().trim();
+        gifts = gifts.filter(g => {
+            const data = g.data || {};
+            const receiver = (data.receiver || '').toLowerCase();
+            const sender = (data.sender || '').toLowerCase();
+            const giftId = (g.id || '').toLowerCase();
+            const message = (data.message || '').toLowerCase();
+
+            return receiver.includes(query) ||
+                sender.includes(query) ||
+                giftId.includes(query) ||
+                message.includes(query);
+        });
+    }
+
+    return gifts;
+}
+
+function getFilteredRequests() {
+    let requests = [...state.activationRequests];
+
+    // Filter by search if provided
+    if (state.filters.search.trim()) {
+        const query = state.filters.search.toLowerCase().trim();
+        requests = requests.filter(r => {
+            const giftId = (r.gift_id || '').toLowerCase();
+            const message = (r.message || '').toLowerCase();
+            return giftId.includes(query) || message.includes(query);
+        });
+    }
+
+    return requests;
+}
+
+// ============================================
+// RENDERING
+// ============================================
 function renderDashboard() {
     const stats = calculateStats();
-
     let html = renderStats(stats);
 
-    if (currentView === 'requests') {
-        html += renderActivationRequests();
+    if (state.currentView === 'requests') {
+        html += renderRequestsView();
     } else {
         html += renderFilters();
-        html += renderGiftsByCategory();
+        html += renderGiftsView();
     }
 
-    mainContent.innerHTML = html;
-    attachEventListeners();
+    elements.mainContent.innerHTML = html;
+    attachDynamicEventListeners();
 }
 
 function calculateStats() {
-    const total = allGifts.length;
-    const active = allGifts.filter(g => g.status === 'active').length;
-    const inactive = allGifts.filter(g => g.status === 'inactive').length;
-    const pending = allGifts.filter(g => g.status === 'pending').length;
-    const pendingRequests = activationRequests.filter(r => r.status === 'pending').length;
+    const total = state.allGifts.length;
+    const active = state.allGifts.filter(g => g.status === 'active').length;
+    const inactive = state.allGifts.filter(g => g.status === 'inactive').length;
+    const pending = state.allGifts.filter(g => g.status === 'pending').length;
+    const pendingRequests = state.activationRequests.filter(r => r.status === 'pending').length;
 
     return { total, active, inactive, pending, pendingRequests };
 }
@@ -154,106 +250,47 @@ function renderStats(stats) {
 }
 
 function renderFilters() {
-    const templates = [...new Set(allGifts.map(g => g.template_id))];
+    // Get unique templates from all gifts
+    const templateIds = [...new Set(state.allGifts.map(g => g.template_id))];
 
     return `
         <div class="filters-bar">
             <div class="filter-group">
                 <label>Status:</label>
-                <select id="filterStatus">
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="pending">Pending</option>
+                <select id="filterStatus" class="filter-select">
+                    <option value="all" ${state.filters.status === 'all' ? 'selected' : ''}>All Status</option>
+                    <option value="active" ${state.filters.status === 'active' ? 'selected' : ''}>Active</option>
+                    <option value="inactive" ${state.filters.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                    <option value="pending" ${state.filters.status === 'pending' ? 'selected' : ''}>Pending</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Template:</label>
-                <select id="filterTemplate">
-                    <option value="all">All Templates</option>
-                    ${templates.map(t => `<option value="${t}">${getTemplateName(t)}</option>`).join('')}
+                <select id="filterTemplate" class="filter-select">
+                    <option value="all" ${state.filters.template === 'all' ? 'selected' : ''}>All Templates</option>
+                    ${templateIds.map(t => `
+                        <option value="${t}" ${state.filters.template === t ? 'selected' : ''}>
+                            ${getTemplateName(t)}
+                        </option>
+                    `).join('')}
                 </select>
             </div>
-            <div class="filter-group">
+            <div class="filter-group" style="flex: 1; max-width: 300px;">
                 <label>Search:</label>
-                <input type="text" id="searchInput" placeholder="Search recipient, sender, ID...">
+                <input type="text" 
+                       id="searchInput" 
+                       class="filter-input" 
+                       placeholder="Search by recipient, sender, ID..."
+                       value="${state.filters.search}">
             </div>
+            <button id="clearFilters" class="btn btn-secondary btn-sm" style="margin-top: 24px;">
+                Clear Filters
+            </button>
         </div>
     `;
 }
 
-function getTemplateName(templateId) {
-    const template = allTemplates.find(t => t.id === templateId);
-    return template ? template.name : templateId;
-}
-
-function getFilteredGifts() {
-    let gifts = [...allGifts];
-
-    // Filter by view
-    if (currentView === 'pending') {
-        gifts = gifts.filter(g => g.status === 'pending');
-    } else if (currentView === 'active') {
-        gifts = gifts.filter(g => g.status === 'active');
-    } else if (currentView === 'inactive') {
-        gifts = gifts.filter(g => g.status === 'inactive');
-    }
-
-    // Apply dropdown filters
-    const statusFilter = document.getElementById('filterStatus')?.value;
-    const templateFilter = document.getElementById('filterTemplate')?.value;
-    const searchQuery = document.getElementById('searchInput')?.value?.toLowerCase();
-
-    if (statusFilter && statusFilter !== 'all') {
-        gifts = gifts.filter(g => g.status === statusFilter);
-    }
-
-    if (templateFilter && templateFilter !== 'all') {
-        gifts = gifts.filter(g => g.template_id === templateFilter);
-    }
-
-    if (searchQuery) {
-        gifts = gifts.filter(g => {
-            const data = g.data || {};
-            return (
-                (data.receiver?.toLowerCase().includes(searchQuery)) ||
-                (data.sender?.toLowerCase().includes(searchQuery)) ||
-                g.id.toLowerCase().includes(searchQuery)
-            );
-        });
-    }
-
-    return gifts;
-}
-
-function groupGiftsByCategory(gifts) {
-    const groups = {};
-
-    gifts.forEach(gift => {
-        const templateId = gift.template_id || 'unknown';
-        const templateName = getTemplateName(templateId);
-        const category = getTemplateCategory(templateId);
-
-        if (!groups[category]) {
-            groups[category] = {
-                name: category,
-                templateName,
-                gifts: []
-            };
-        }
-
-        groups[category].gifts.push(gift);
-    });
-
-    return Object.values(groups).sort((a, b) => b.gifts.length - a.gifts.length);
-}
-
-function getTemplateCategory(templateId) {
-    const template = allTemplates.find(t => t.id === templateId);
-    return template ? `${template.category} - ${template.name}` : `Other - ${templateId}`;
-}
-
-function renderGiftsByCategory() {
+function renderGiftsView() {
     const gifts = getFilteredGifts();
 
     if (gifts.length === 0) {
@@ -269,11 +306,11 @@ function renderGiftsByCategory() {
     const categories = groupGiftsByCategory(gifts);
 
     return categories.map((category, index) => `
-        <div class="category-section ${index > 0 ? 'collapsed' : ''}" data-category="${category.name}">
+        <div class="category-section" data-category="${escapeHtml(category.name)}">
             <div class="category-header" onclick="toggleCategory(this)">
                 <div class="category-title">
                     <span>📁</span>
-                    <span>${category.name}</span>
+                    <span>${escapeHtml(category.name)}</span>
                     <span class="category-count">${category.gifts.length}</span>
                 </div>
                 <span class="category-toggle">▼</span>
@@ -287,53 +324,23 @@ function renderGiftsByCategory() {
     `).join('');
 }
 
-function renderGiftCard(gift) {
-    const data = gift.data || {};
-    const template = allTemplates.find(t => t.id === gift.template_id);
+function renderRequestsView() {
+    const requests = getFilteredRequests();
+    const pending = requests.filter(r => r.status === 'pending');
+    const processed = requests.filter(r => r.status === 'processed');
 
     return `
-        <div class="gift-card ${gift.status}" data-gift-id="${gift.id}">
-            <div class="gift-header">
-                <span class="gift-id">${gift.id}</span>
-                <span class="gift-status ${gift.status}">${gift.status}</span>
-            </div>
-            <div class="gift-info">
-                <div class="gift-recipient">👤 ${data.receiver || 'Unknown'}</div>
-                <div class="gift-sender">From: ${data.sender || 'Unknown'}</div>
-            </div>
-            <div class="gift-message">${data.message || 'No message'}</div>
-            <div class="gift-meta">
-                <span>📅 ${formatDate(gift.created_at)}</span>
-                <span>🎨 ${template?.name || gift.template_id}</span>
-            </div>
-            <div class="gift-actions">
-                ${renderToggleButton(gift)}
-                <a href="/g/${gift.id}" target="_blank" class="btn btn-sm btn-secondary">View</a>
+        <div class="filters-bar" style="margin-bottom: 1rem;">
+            <div class="filter-group" style="flex: 1; max-width: 400px;">
+                <label>Search Requests:</label>
+                <input type="text" 
+                       id="searchInput" 
+                       class="filter-input" 
+                       placeholder="Search by gift ID or message..."
+                       value="${state.filters.search}">
             </div>
         </div>
-    `;
-}
 
-function renderToggleButton(gift) {
-    const isActive = gift.status === 'active';
-    const nextStatus = isActive ? 'inactive' : 'active';
-    const buttonClass = isActive ? 'btn-danger' : 'btn-success';
-    const buttonText = isActive ? 'Deactivate' : 'Activate';
-
-    return `
-        <button class="btn btn-sm ${buttonClass} toggle-status-btn" 
-                data-gift-id="${gift.id}" 
-                data-next-status="${nextStatus}">
-            ${buttonText}
-        </button>
-    `;
-}
-
-function renderActivationRequests() {
-    const pending = activationRequests.filter(r => r.status === 'pending');
-    const processed = activationRequests.filter(r => r.status === 'processed');
-
-    return `
         <div class="category-section">
             <div class="category-header">
                 <div class="category-title">
@@ -343,8 +350,10 @@ function renderActivationRequests() {
                 </div>
             </div>
             <div class="category-content">
-                ${pending.length === 0 ? '<p style="padding: 2rem; text-align: center; color: var(--gray-400);">No pending requests</p>' :
-            pending.map(request => renderRequestCard(request)).join('')}
+                ${pending.length === 0
+            ? '<p style="padding: 2rem; text-align: center; color: var(--gray-400);">No pending requests</p>'
+            : `<div class="gifts-grid">${pending.map(r => renderRequestCard(r)).join('')}</div>`
+        }
             </div>
         </div>
 
@@ -358,8 +367,74 @@ function renderActivationRequests() {
                 <span class="category-toggle">▼</span>
             </div>
             <div class="category-content">
-                ${processed.length === 0 ? '<p style="padding: 2rem; text-align: center; color: var(--gray-400);">No processed requests</p>' :
-            processed.map(request => renderRequestCard(request)).join('')}
+                ${processed.length === 0
+            ? '<p style="padding: 2rem; text-align: center; color: var(--gray-400);">No processed requests</p>'
+            : `<div class="gifts-grid">${processed.map(r => renderRequestCard(r)).join('')}</div>`
+        }
+            </div>
+        </div>
+    `;
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+function groupGiftsByCategory(gifts) {
+    const groups = {};
+
+    gifts.forEach(gift => {
+        const templateId = gift.template_id || 'unknown';
+        const category = getTemplateCategory(templateId);
+
+        if (!groups[category]) {
+            groups[category] = {
+                name: category,
+                gifts: []
+            };
+        }
+
+        groups[category].gifts.push(gift);
+    });
+
+    // Sort by number of gifts (descending)
+    return Object.values(groups).sort((a, b) => b.gifts.length - a.gifts.length);
+}
+
+function getTemplateCategory(templateId) {
+    const template = state.allTemplates.find(t => t.id === templateId);
+    if (template) {
+        return `${template.category} - ${template.name}`;
+    }
+    return `Other - ${templateId}`;
+}
+
+function getTemplateName(templateId) {
+    const template = state.allTemplates.find(t => t.id === templateId);
+    return template ? template.name : templateId;
+}
+
+function renderGiftCard(gift) {
+    const data = gift.data || {};
+    const template = state.allTemplates.find(t => t.id === gift.template_id);
+
+    return `
+        <div class="gift-card ${gift.status}" data-gift-id="${gift.id}">
+            <div class="gift-header">
+                <span class="gift-id">${gift.id}</span>
+                <span class="gift-status ${gift.status}">${gift.status}</span>
+            </div>
+            <div class="gift-info">
+                <div class="gift-recipient">👤 ${escapeHtml(data.receiver || 'Unknown')}</div>
+                <div class="gift-sender">From: ${escapeHtml(data.sender || 'Unknown')}</div>
+            </div>
+            <div class="gift-message">${escapeHtml(data.message || 'No message')}</div>
+            <div class="gift-meta">
+                <span>📅 ${formatDate(gift.created_at)}</span>
+                <span>🎨 ${escapeHtml(template?.name || gift.template_id)}</span>
+            </div>
+            <div class="gift-actions">
+                ${renderToggleButton(gift)}
+                <a href="/g/${gift.id}" target="_blank" class="btn btn-sm btn-secondary">View</a>
             </div>
         </div>
     `;
@@ -372,7 +447,7 @@ function renderRequestCard(request) {
                 <span class="gift-id">${request.gift_id}</span>
                 <span class="gift-status ${request.status}">${request.status}</span>
             </div>
-            <div class="gift-message">${request.message || 'No message'}</div>
+            <div class="gift-message">${escapeHtml(request.message || 'No message')}</div>
             <div class="gift-meta">
                 <span>📅 ${formatDate(request.created_at)}</span>
             </div>
@@ -393,96 +468,158 @@ function renderRequestCard(request) {
     `;
 }
 
-function attachEventListeners() {
-    // Filter change listeners
-    document.getElementById('filterStatus')?.addEventListener('change', renderDashboard);
-    document.getElementById('filterTemplate')?.addEventListener('change', renderDashboard);
-    document.getElementById('searchInput')?.addEventListener('input', debounce(renderDashboard, 300));
+function renderToggleButton(gift) {
+    const isActive = gift.status === 'active';
+    const nextStatus = isActive ? 'inactive' : 'active';
+    const buttonClass = isActive ? 'btn-danger' : 'btn-success';
+    const buttonText = isActive ? 'Deactivate' : 'Activate';
+
+    return `
+        <button class="btn btn-sm ${buttonClass} toggle-status-btn" 
+                data-gift-id="${gift.id}" 
+                data-next-status="${nextStatus}">
+            ${buttonText}
+        </button>
+    `;
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// EVENT HANDLERS
+// ============================================
+function attachDynamicEventListeners() {
+    // Filter change listeners - use 'change' for select, 'input' for text
+    const statusFilter = document.getElementById('filterStatus');
+    const templateFilter = document.getElementById('filterTemplate');
+    const searchInput = document.getElementById('searchInput');
+    const clearFiltersBtn = document.getElementById('clearFilters');
+
+    statusFilter?.addEventListener('change', (e) => {
+        state.filters.status = e.target.value;
+        renderDashboard();
+    });
+
+    templateFilter?.addEventListener('change', (e) => {
+        state.filters.template = e.target.value;
+        renderDashboard();
+    });
+
+    searchInput?.addEventListener('input', debounce((e) => {
+        state.filters.search = e.target.value;
+        renderDashboard();
+    }, 300));
+
+    clearFiltersBtn?.addEventListener('click', () => {
+        state.filters.status = 'all';
+        state.filters.template = 'all';
+        state.filters.search = '';
+        renderDashboard();
+    });
 
     // Toggle status buttons
     document.querySelectorAll('.toggle-status-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const giftId = e.target.dataset.giftId;
-            const nextStatus = e.target.dataset.nextStatus;
-
-            e.target.disabled = true;
-            e.target.textContent = nextStatus === 'active' ? 'Activating...' : 'Deactivating...';
-
-            const { error } = await updateGiftStatus(giftId, nextStatus);
-
-            if (error) {
-                showToast('Error: ' + error.message, 'error');
-                e.target.disabled = false;
-            } else {
-                showToast(`Gift ${nextStatus === 'active' ? 'activated' : 'deactivated'} successfully!`, 'success');
-                // Update local state
-                const gift = allGifts.find(g => g.id === giftId);
-                if (gift) gift.status = nextStatus;
-                renderDashboard();
-            }
-        });
+        btn.addEventListener('click', handleToggleStatus);
     });
 
-    // Activate request buttons
+    // Request action buttons
     document.querySelectorAll('.activate-request-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const giftId = e.target.dataset.giftId;
-            const requestId = e.target.dataset.requestId;
-
-            e.target.disabled = true;
-            e.target.textContent = 'Activating...';
-
-            const { error } = await updateGiftStatus(giftId, 'active');
-
-            if (error) {
-                showToast('Error: ' + error.message, 'error');
-                e.target.disabled = false;
-            } else {
-                await markRequestProcessed(requestId);
-                showToast('Gift activated and request marked as processed!', 'success');
-                await loadDashboard();
-            }
-        });
+        btn.addEventListener('click', handleActivateRequest);
     });
 
-    // Mark processed buttons
     document.querySelectorAll('.mark-processed-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const requestId = e.target.dataset.requestId;
-
-            e.target.disabled = true;
-            e.target.textContent = 'Processing...';
-
-            const { error } = await markRequestProcessed(requestId);
-
-            if (error) {
-                showToast('Error: ' + error.message, 'error');
-                e.target.disabled = false;
-            } else {
-                showToast('Request marked as processed!', 'success');
-                await loadDashboard();
-            }
-        });
+        btn.addEventListener('click', handleMarkProcessed);
     });
 }
 
-// Global function for category toggle
-window.toggleCategory = function (header) {
-    const section = header.closest('.category-section');
-    section.classList.toggle('collapsed');
-};
+async function handleToggleStatus(e) {
+    const giftId = e.target.dataset.giftId;
+    const nextStatus = e.target.dataset.nextStatus;
+
+    e.target.disabled = true;
+    e.target.textContent = nextStatus === 'active' ? 'Activating...' : 'Deactivating...';
+
+    const { error } = await updateGiftStatus(giftId, nextStatus);
+
+    if (error) {
+        showToast('Error: ' + error.message, 'error');
+        e.target.disabled = false;
+        e.target.textContent = nextStatus === 'active' ? 'Activate' : 'Deactivate';
+    } else {
+        showToast(`Gift ${nextStatus === 'active' ? 'activated' : 'deactivated'} successfully!`, 'success');
+        // Update local state
+        const gift = state.allGifts.find(g => g.id === giftId);
+        if (gift) gift.status = nextStatus;
+        renderDashboard();
+    }
+}
+
+async function handleActivateRequest(e) {
+    const giftId = e.target.dataset.giftId;
+    const requestId = e.target.dataset.requestId;
+
+    e.target.disabled = true;
+    e.target.textContent = 'Activating...';
+
+    const { error } = await updateGiftStatus(giftId, 'active');
+
+    if (error) {
+        showToast('Error: ' + error.message, 'error');
+        e.target.disabled = false;
+        e.target.textContent = '✅ Activate';
+    } else {
+        await markRequestProcessed(requestId);
+        showToast('Gift activated and request processed!', 'success');
+        await loadDashboard();
+    }
+}
+
+async function handleMarkProcessed(e) {
+    const requestId = e.target.dataset.requestId;
+
+    e.target.disabled = true;
+    e.target.textContent = 'Processing...';
+
+    const { error } = await markRequestProcessed(requestId);
+
+    if (error) {
+        showToast('Error: ' + error.message, 'error');
+        e.target.disabled = false;
+        e.target.textContent = 'Mark Processed';
+    } else {
+        showToast('Request marked as processed!', 'success');
+        await loadDashboard();
+    }
+}
+
+// ============================================
+// UI HELPERS
+// ============================================
+function showLoading() {
+    elements.mainContent.innerHTML = `
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Loading dashboard...</p>
+        </div>
+    `;
+}
 
 function showToast(message, type = 'success') {
-    toast.textContent = message;
-    toast.className = `toast ${type} show`;
+    elements.toast.textContent = message;
+    elements.toast.className = `toast ${type} show`;
 
     setTimeout(() => {
-        toast.classList.remove('show');
+        elements.toast.classList.remove('show');
     }, 3000);
 }
 
 function showError(message) {
-    mainContent.innerHTML = `
+    elements.mainContent.innerHTML = `
         <div class="empty-state">
             <div class="empty-state-icon">⚠️</div>
             <h3>Error</h3>
@@ -515,3 +652,14 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+// Global function for category toggle
+window.toggleCategory = function (header) {
+    const section = header.closest('.category-section');
+    section.classList.toggle('collapsed');
+};
+
+// ============================================
+// START
+// ============================================
+await init();
