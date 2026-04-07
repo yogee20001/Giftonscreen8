@@ -203,3 +203,28 @@ export async function checkIsAdmin() {
 export async function checkCurrentUserAdminRole() {
     return await checkIsAdmin();
 }
+
+/**
+ * Get all gifts (for admin use)
+ * @returns {Promise<{gifts: Array|null, error: Error|null}>}
+ */
+export async function getAllGiftsAdmin() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { gifts: null, error: new Error('User not authenticated') };
+    }
+
+    // Check if user is admin
+    const { isAdmin, error: adminError } = await checkIsAdmin();
+    if (adminError || !isAdmin) {
+        return { gifts: null, error: new Error('Admin access required') };
+    }
+
+    const { data: gifts, error } = await supabase
+        .from('gifts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    return { gifts, error };
+}
