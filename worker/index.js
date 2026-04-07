@@ -153,7 +153,7 @@ async function fetchTemplateInfo(templateId, env) {
 
 /**
  * Inject gift data into template
- * Replaces {{DATA}} with JSON string
+ * Replaces GIFT_DATA placeholder with actual data
  */
 function injectData(templateHtml, giftData, gift) {
     const data = {
@@ -169,7 +169,12 @@ function injectData(templateHtml, giftData, gift) {
         .replace(/>/g, '\\u003e')
         .replace(/&/g, '\\u0026');
 
-    return templateHtml.replace('{{DATA}}', jsonData);
+    // Replace the GIFT_DATA declaration in the template
+    // Matches: const GIFT_DATA = { ... };
+    return templateHtml.replace(
+        /const GIFT_DATA = \{[^}]+\};/,
+        `const GIFT_DATA = ${jsonData};`
+    );
 }
 
 /**
