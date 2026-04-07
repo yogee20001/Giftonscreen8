@@ -6,6 +6,19 @@ export default {
         const url = new URL(request.url);
         const pathname = url.pathname;
 
+        // Health check endpoint
+        if (pathname === '/health') {
+            return new Response(JSON.stringify({
+                status: 'ok',
+                hasSupabaseUrl: !!env.SUPABASE_URL,
+                hasSupabaseKey: !!env.SUPABASE_SERVICE_KEY,
+                hasGithubToken: !!env.GITHUB_TOKEN,
+                hasGithubRepo: !!env.GITHUB_REPO
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         // Only handle /g/ routes
         if (!pathname.startsWith('/g/')) {
             return new Response('Not Found', { status: 404 });
@@ -54,7 +67,7 @@ export default {
 
         } catch (error) {
             console.error('Worker error:', error);
-            return renderError('Something went wrong', 500);
+            return renderError(`Error: ${error.message}`, 500);
         }
     }
 };
@@ -112,8 +125,9 @@ async function fetchTemplate(templateId, env) {
 
     const response = await fetch(url, {
         headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`,
-            'User-Agent': 'GiftOnScreen-Worker'
+            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+            'User-Agent': 'GiftOnScreen-Worker',
+            'Accept': 'application/vnd.github.v3.raw'
         }
     });
 
