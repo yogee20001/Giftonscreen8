@@ -16,7 +16,8 @@ import { formatDate } from '../../core/utils.js';
 // WORKER CONFIGURATION
 // Gift Rendering Worker URL - handles all /g/:giftId routes
 // ============================================
-const WORKER_URL = 'https://giftonscreen8-worker.giftonscreen.workers.dev';
+// Use custom domain for gift links
+const GIFT_BASE_URL = 'https://giftonscreen.shop';
 
 // ============================================
 // STATE MANAGEMENT
@@ -440,7 +441,7 @@ function renderGiftCard(gift) {
             </div>
             <div class="gift-actions">
                 ${renderToggleButton(gift)}
-                <a href="${WORKER_URL}/g/${gift.id}" target="_blank" class="btn btn-sm btn-secondary">View</a>
+                <a href="${GIFT_BASE_URL}/g/${gift.id}" target="_blank" class="btn btn-sm btn-secondary">View</a>
             </div>
         </div>
     `;
