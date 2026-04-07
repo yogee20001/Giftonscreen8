@@ -30,6 +30,9 @@ function getRedirectUrl() {
     if (redirect === 'create' && template) {
         return `/public/create.html?template=${template}`;
     }
+    if (redirect === 'preview') {
+        return '/public/preview.html';
+    }
     return '/public/index.html';
 }
 

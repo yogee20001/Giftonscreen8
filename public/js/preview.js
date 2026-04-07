@@ -1,10 +1,7 @@
 // Preview Page Logic
 // Renders gift preview in iframe using localStorage data
 
-import { requireAuth, logout } from '../../core/auth.js';
-
-// Auth guard
-await requireAuth('/public/login.html');
+import { getUser, logout } from '../../core/auth.js';
 
 // Load preview data from localStorage
 const data = JSON.parse(localStorage.getItem('previewData'));
@@ -101,6 +98,18 @@ let giftId = null;
 // Continue button - create actual gift in database and activation request immediately
 continueBtn.addEventListener('click', async () => {
     continueBtn.disabled = true;
+    continueBtn.textContent = 'Checking login...';
+
+    // Check if user is logged in first
+    const { user: currentUser } = await getUser();
+
+    if (!currentUser) {
+        // User not logged in - save current state and redirect to login
+        sessionStorage.setItem('redirectAfterLogin', 'preview');
+        window.location.href = `/public/login.html?redirect=preview`;
+        return;
+    }
+
     continueBtn.textContent = 'Creating gift...';
 
     // Import API functions

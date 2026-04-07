@@ -67,14 +67,8 @@ function renderTemplates(templates) {
 }
 
 async function handleTemplateClick(templateId) {
-    if (currentUser) {
-        // User is logged in, go directly to create page
-        window.location.href = `/public/create.html?template=${templateId}`;
-    } else {
-        // User is not logged in, store template and redirect to login
-        sessionStorage.setItem('selectedTemplate', templateId);
-        window.location.href = `/public/login.html?redirect=create&template=${templateId}`;
-    }
+    // Go directly to create page - login will be required only when creating gift
+    window.location.href = `/public/create.html?template=${templateId}`;
 }
 
 async function loadTemplates() {

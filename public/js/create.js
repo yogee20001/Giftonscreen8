@@ -1,12 +1,9 @@
 // Create Gift Page Logic
 // Handles gift creation with template selection and image uploads
 
-import { requireAuth, logout, getUser } from '../../core/auth.js';
+import { logout, getUser } from '../../core/auth.js';
 import { getTemplates } from '../../core/api.js';
 import { uploadMultipleImages } from '../../core/cloudinary.js';
-
-// Auth guard
-await requireAuth('/public/login.html');
 
 // Get template ID from URL
 const params = new URLSearchParams(window.location.search);
