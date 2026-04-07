@@ -653,7 +653,8 @@
 
         function submitForm() {
             syncFormFields();
-            document.getElementById('formSubmit').click();
+            // Use requestSubmit for proper form submission event
+            document.getElementById('createGiftForm').requestSubmit();
         }
 
         // Message display
