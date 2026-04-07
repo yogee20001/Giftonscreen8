@@ -196,6 +196,22 @@ Status: Pending payment`;
     giftData.innerHTML += `<p><strong>Gift ID:</strong> ${giftId}</p>`;
     giftData.innerHTML += `<p><strong>Status:</strong> <span style="color: #f59e0b;">Pending Activation</span></p>`;
 
+    // Populate gift link
+    const giftLink = `${window.location.origin}/g/${giftId}`;
+    const giftLinkInput = document.getElementById('gift-link-input');
+    giftLinkInput.value = giftLink;
+
+    // Add copy button functionality
+    const copyBtn = document.getElementById('copy-link-btn');
+    copyBtn.addEventListener('click', () => {
+        giftLinkInput.select();
+        document.execCommand('copy');
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+        }, 2000);
+    });
+
     // Alert for immediate feedback (remove after testing)
     alert('✅ Gift created! Admin has been automatically notified. You can now complete payment via WhatsApp.');
 });
